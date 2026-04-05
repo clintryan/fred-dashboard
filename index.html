@@ -82,7 +82,7 @@
     /* ── KPI Cards ── */
     .kpi-row {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
+      grid-template-columns: repeat(3, 1fr);
       gap: 14px;
       margin-bottom: 22px;
     }
@@ -162,9 +162,19 @@
     /* ── Body Grid ── */
     .body-grid {
       display: grid;
-      grid-template-columns: 1fr 340px;
+      grid-template-columns: 1fr;
       gap: 18px;
       margin-bottom: 18px;
+    }
+
+    /* ── Todos full-width: 2-col layout ── */
+    .todos-full {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0 32px;
+    }
+    @media (max-width: 720px) {
+      .todos-full { grid-template-columns: 1fr; }
     }
 
     /* ── Section headers ── */
@@ -395,16 +405,17 @@
   // ── TODOS (Fred manages — MITs first, then quick wins) ──
   const TODOS = {
     mits: [
-      { text: "Sign BCC or Newton contract — decision needed this week", tag: "teacher", done: false },
-      { text: "Set up italki profile (already approved, zero setup done)", tag: "fluentrx", done: false },
-      { text: "Send email to 300-contact list this Friday (Friday Fluency Fix)", tag: "fluentrx", done: false },
+      { text: "Send Newton rejection — draft ready, to: brian.d@newton.ac.th, CC: joshua.e@newton.ac.th", tag: "teacher", done: false },
+      { text: "Chase BCC contract — signing April 10, 10am, BCC Silom", tag: "teacher", done: false },
+      { text: "Reply to Nancy Lin — confirm weekend time slot, start April 24", tag: "fluentrx", done: false },
+      { text: "Deploy welcome email sequence to list (~300 subs)", tag: "fluentrx", done: false },
     ],
     quick: [
-      { text: "Take fluentrx.com down / make private before BCC contract signed", tag: "fluentrx", done: false },
-      { text: "Update AmazingTalker, Preply marketplace profiles (stale, wrong brand voice)", tag: "fluentrx", done: false },
-      { text: "Commit today's changes to fred repo (git push)", tag: "fred", done: false },
-      { text: "Create Upwork/Fiverr profile for AI automations", tag: "coder", done: false },
-      { text: "Draft 3-email welcome sequence for new FluentRx subscribers", tag: "fluentrx", done: false },
+      { text: "Decide weekend schedule post-May 5 (how many sessions, which days)", tag: "fluentrx", done: false },
+      { text: "FluentRx rebrand — pick direction and domain", tag: "fluentrx", done: false },
+      { text: "italki setup — approved, never configured", tag: "fluentrx", done: false },
+      { text: "Take fluentrx.com down / make private before May 5", tag: "fluentrx", done: false },
+      { text: "Call Stripe API — verify key, pull April revenue data", tag: "fred", done: false },
     ]
   };
 
@@ -446,14 +457,6 @@
       <div class="kpi-sub">Stripe + manual income</div>
     </div>
 
-    <!-- Sessions MTD -->
-    <div class="kpi-card up-card">
-      <div class="kpi-label">Sessions MTD</div>
-      <div class="kpi-value" id="kpi-sessions">—</div>
-      <div class="kpi-delta" id="kpi-sessions-delta">—</div>
-      <div class="kpi-sub">vs. <span id="last-month-sessions">—</span> last month</div>
-    </div>
-
     <!-- Active Students -->
     <div class="kpi-card">
       <div class="kpi-label">Active Students</div>
@@ -476,13 +479,6 @@
       </div>
     </div>
 
-    <!-- Days Remaining -->
-    <div class="kpi-card">
-      <div class="kpi-label">Days Left in April</div>
-      <div class="kpi-value" id="kpi-days">—</div>
-      <div class="kpi-delta neutral" id="kpi-days-sub">—</div>
-    </div>
-
   </div>
 
   <!-- BODY: Calendar + Todos -->
@@ -500,43 +496,17 @@
       <div class="calendar-note">⚠ Must be signed in to Google in this browser. Calendars must be set to Public or shared.</div>
     </div>
 
-    <!-- Todos -->
-    <div class="panel">
-      <div class="section-header">
-        <div class="section-title">Today's Focus</div>
-        <div class="section-badge">Fred-managed</div>
-      </div>
-      <div class="todos-panel" id="todos-panel">
-        <!-- injected by script -->
-      </div>
-    </div>
-
   </div>
 
-  <!-- REVENUE BREAKDOWN -->
-  <div class="revenue-row">
-
-    <div class="rev-card">
-      <div class="rev-label">FluentRx (Stripe)</div>
-      <div class="rev-value live" id="rev-stripe">—</div>
-      <div class="rev-sub">Month-to-date charges</div>
-      <div class="rev-source" id="rev-stripe-note">—</div>
+  <!-- TODOS (full-width, below calendar) -->
+  <div class="panel" style="margin-bottom: 18px;">
+    <div class="section-header">
+      <div class="section-title">Today's Focus</div>
+      <div class="section-badge">Fred-managed</div>
     </div>
-
-    <div class="rev-card">
-      <div class="rev-label">Teaching Income (Manual)</div>
-      <div class="rev-value manual" id="rev-manual">—</div>
-      <div class="rev-sub" id="rev-manual-note">—</div>
-      <div class="manual-hint">Update this in the MANUAL_DATA block above</div>
+    <div class="todos-panel todos-full" id="todos-panel">
+      <!-- injected by script -->
     </div>
-
-    <div class="rev-card">
-      <div class="rev-label">Total This Month</div>
-      <div class="rev-value total" id="rev-total">—</div>
-      <div class="rev-sub">vs. $<span id="rev-last-month">—</span> last month</div>
-      <div class="rev-source">Last month: FluentRx only</div>
-    </div>
-
   </div>
 
 </div>
@@ -581,16 +551,6 @@
     el.className = 'kpi-delta ' + (revDelta >= 0 ? 'up' : 'down');
   }
 
-  // ── KPI: Sessions
-  document.getElementById('kpi-sessions').textContent = SESSION_DATA.sessions_mtd;
-  document.getElementById('last-month-sessions').textContent = SESSION_DATA.sessions_last_month;
-  const sesDelta = pctChange(SESSION_DATA.sessions_mtd, SESSION_DATA.sessions_last_month);
-  if (sesDelta !== null) {
-    const el = document.getElementById('kpi-sessions-delta');
-    el.textContent = (sesDelta >= 0 ? '↑ ' : '↓ ') + Math.abs(sesDelta) + '% vs last month';
-    el.className = 'kpi-delta ' + (sesDelta >= 0 ? 'up' : 'down');
-  }
-
   // ── KPI: Students
   document.getElementById('kpi-students').textContent = SESSION_DATA.active_students;
   document.getElementById('kpi-trials').textContent = SESSION_DATA.trials_mtd;
@@ -604,22 +564,6 @@
   else if (goalPct < 70) bar.className = 'goal-bar-fill warn';
   document.getElementById('goal-bar-label').textContent =
     '$' + GOAL.current + ' of $' + GOAL.target + ' — recoup Claude Max';
-
-  // ── KPI: Days remaining
-  const daysLeft = daysUntil(GOAL.deadline);
-  document.getElementById('kpi-days').textContent = daysLeft;
-  document.getElementById('kpi-days-sub').textContent =
-    daysLeft <= 7 ? '⚠ Final stretch' : 'until April 30';
-
-  // ── Revenue breakdown
-  document.getElementById('rev-stripe').textContent = '$' + STRIPE_DATA.mtd_revenue.toLocaleString();
-  document.getElementById('rev-stripe-note').textContent =
-    'via restricted key · updated ' + STRIPE_DATA.last_updated;
-  const manualTotal = MANUAL_DATA.teaching_mtd + MANUAL_DATA.other_mtd;
-  document.getElementById('rev-manual').textContent = '$' + manualTotal.toLocaleString();
-  document.getElementById('rev-manual-note').textContent = MANUAL_DATA.note || '—';
-  document.getElementById('rev-total').textContent = '$' + totalMTD.toLocaleString();
-  document.getElementById('rev-last-month').textContent = STRIPE_DATA.last_month.toLocaleString();
 
   // ── Footer
   document.getElementById('footer-refresh').textContent =
@@ -660,12 +604,15 @@
     </div>`;
   }
 
-  let html = '';
-  html += '<div class="mit-header">⬥ Most Important Tasks</div>';
-  TODOS.mits.forEach(t => { html += renderTodo(t, ''); });
-  html += '<div class="quick-divider">⬥ Quick Wins</div>';
-  TODOS.quick.forEach(t => { html += renderTodo(t, 'quick'); });
-  document.getElementById('todos-panel').innerHTML = html;
+  let mitsHtml = '<div><div class="mit-header">⬥ Must Do</div>';
+  TODOS.mits.forEach(t => { mitsHtml += renderTodo(t, ''); });
+  mitsHtml += '</div>';
+
+  let quickHtml = '<div><div class="quick-divider" style="padding-top:0;">⬥ Quick Wins</div>';
+  TODOS.quick.forEach(t => { quickHtml += renderTodo(t, 'quick'); });
+  quickHtml += '</div>';
+
+  document.getElementById('todos-panel').innerHTML = mitsHtml + quickHtml;
 </script>
 
 </body>
