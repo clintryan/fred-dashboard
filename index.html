@@ -5,28 +5,35 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FRED — Command Center</title>
   <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <!-- Google Identity Services (for Calendar OAuth2) -->
+  <script src="https://accounts.google.com/gsi/client" async></script>
   <style>
-    /* =============================================
-       AESTHETIC: Dark Command Center
-       Navy-black base + electric cyan accent
-       Clint Ryan | April 2026
-    ============================================= */
+    /* ═══════════════════════════════════════════
+       FRED Dashboard v2 — Dark Command Center
+       Navy-black + electric cyan + persona accents
+       April 2026
+    ═══════════════════════════════════════════ */
 
     :root {
-      --bg:         #0B0F1A;
-      --surface:    #131929;
-      --surface2:   #1A2238;
-      --border:     #1E2D45;
-      --border2:    #263350;
-      --text:       #E2E8F0;
-      --text-muted: #64748B;
-      --accent:     #00D4FF;
-      --accent-dim: rgba(0, 212, 255, 0.12);
-      --up:         #10B981;
-      --down:       #F43F5E;
-      --warn:       #F59E0B;
-      --mit-color:  #00D4FF;
-      --quick-color:#A78BFA;
+      --bg:          #0B0F1A;
+      --surface:     #131929;
+      --surface2:    #1A2238;
+      --border:      #1E2D45;
+      --border2:     #263350;
+      --text:        #E2E8F0;
+      --text-muted:  #64748B;
+      --accent:      #00D4FF;
+      --accent-dim:  rgba(0, 212, 255, 0.12);
+      --up:          #10B981;
+      --down:        #F43F5E;
+      --warn:        #F59E0B;
+      --purple:      #A78BFA;
+      /* persona accents */
+      --c-fluentrx:  #00D4FF;
+      --c-coder:     #A78BFA;
+      --c-teacher:   #10B981;
+      --c-trader:    #F59E0B;
+      --c-fred:      #64748B;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -40,16 +47,15 @@
       min-height: 100vh;
     }
 
-    /* ── Header ── */
+    /* ── Header ─────────────────────────────── */
     .header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 18px 28px;
+      padding: 16px 28px;
       border-bottom: 1px solid var(--border);
       background: var(--surface);
     }
-    .header-left { display: flex; align-items: center; gap: 14px; }
     .logo {
       font-family: 'Space Mono', monospace;
       font-size: 22px;
@@ -58,10 +64,11 @@
       letter-spacing: 0.06em;
     }
     .logo-sub {
-      font-size: 11px;
+      font-size: 10px;
       color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.12em;
+      margin-top: 2px;
     }
     .header-meta {
       text-align: right;
@@ -76,15 +83,50 @@
       margin-bottom: 2px;
     }
 
-    /* ── Layout ── */
-    .main { padding: 20px 28px; max-width: 1600px; margin: 0 auto; }
+    /* ── Persona Tab Nav ─────────────────────── */
+    .tab-nav {
+      display: flex;
+      align-items: stretch;
+      padding: 0 28px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      gap: 2px;
+      overflow-x: auto;
+    }
+    .tab-btn {
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--text-muted);
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      padding: 13px 18px;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+      white-space: nowrap;
+      margin-bottom: -1px;
+      flex-shrink: 0;
+    }
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active[data-persona="all"]       { color: var(--accent);     border-bottom-color: var(--accent);     }
+    .tab-btn.active[data-persona="fluentrx"]  { color: var(--c-fluentrx); border-bottom-color: var(--c-fluentrx); }
+    .tab-btn.active[data-persona="coder"]     { color: var(--c-coder);    border-bottom-color: var(--c-coder);    }
+    .tab-btn.active[data-persona="teacher"]   { color: var(--c-teacher);  border-bottom-color: var(--c-teacher);  }
+    .tab-btn.active[data-persona="trader"]    { color: var(--c-trader);   border-bottom-color: var(--c-trader);   }
 
-    /* ── KPI Cards ── */
+    /* ── Main Layout ─────────────────────────── */
+    .main { padding: 20px 28px; max-width: 1700px; margin: 0 auto; }
+
+    /* ── KPI Cards ───────────────────────────── */
     .kpi-row {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 14px;
-      margin-bottom: 22px;
+      margin-bottom: 20px;
+      min-height: 110px;
     }
     .kpi-card {
       background: var(--surface);
@@ -103,7 +145,7 @@
       opacity: 0.5;
     }
     .kpi-card.warn::before { background: var(--warn); }
-    .kpi-card.up-card::before { background: var(--up); }
+    .kpi-card.green::before { background: var(--up); }
     .kpi-label {
       font-size: 10px;
       font-weight: 600;
@@ -120,69 +162,41 @@
       line-height: 1;
       margin-bottom: 8px;
     }
-    .kpi-delta {
-      font-size: 11px;
-      font-family: 'Space Mono', monospace;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-    .kpi-delta.up { color: var(--up); }
+    .kpi-delta { font-size: 11px; font-family: 'Space Mono', monospace; }
+    .kpi-delta.up   { color: var(--up); }
     .kpi-delta.down { color: var(--down); }
-    .kpi-delta.neutral { color: var(--text-muted); }
-    .kpi-sub {
-      font-size: 11px;
-      color: var(--text-muted);
-      margin-top: 4px;
-    }
-
-    /* Goal progress bar */
-    .goal-bar-wrap { margin-top: 8px; }
+    .kpi-sub { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
     .goal-bar-track {
-      height: 4px;
-      background: var(--border2);
-      border-radius: 2px;
-      overflow: hidden;
+      height: 4px; background: var(--border2); border-radius: 2px;
+      overflow: hidden; margin-top: 8px;
     }
     .goal-bar-fill {
-      height: 100%;
-      background: var(--accent);
-      border-radius: 2px;
+      height: 100%; background: var(--accent); border-radius: 2px;
       transition: width 0.6s ease;
     }
-    .goal-bar-fill.warn { background: var(--warn); }
+    .goal-bar-fill.warn   { background: var(--warn); }
     .goal-bar-fill.danger { background: var(--down); }
-    .goal-bar-pct {
-      font-size: 10px;
-      color: var(--text-muted);
-      margin-top: 5px;
-      font-family: 'Space Mono', monospace;
-    }
+    .goal-bar-pct { font-size: 10px; color: var(--text-muted); margin-top: 5px; font-family: 'Space Mono', monospace; }
 
-    /* ── Body Grid ── */
+    /* ── Body Grid ───────────────────────────── */
     .body-grid {
       display: grid;
-      grid-template-columns: 1fr;
+      grid-template-columns: 1fr 320px;
       gap: 18px;
-      margin-bottom: 18px;
     }
 
-    /* ── Todos full-width: 2-col layout ── */
-    .todos-full {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0 32px;
+    /* ── Panel ───────────────────────────────── */
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px;
     }
-    @media (max-width: 720px) {
-      .todos-full { grid-template-columns: 1fr; }
-    }
-
-    /* ── Section headers ── */
     .section-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 14px;
+      margin-bottom: 16px;
     }
     .section-title {
       font-size: 10px;
@@ -197,73 +211,65 @@
       font-family: 'Space Mono', monospace;
     }
 
-    /* ── Panel ── */
-    .panel {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 18px 20px;
+    /* ── Kanban ──────────────────────────────── */
+    .kanban-board {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      align-items: start;
     }
-
-    /* ── Calendar embed ── */
-    .calendar-wrap iframe {
-      width: 100%;
-      border: none;
-      border-radius: 6px;
-      display: block;
-      background: #1a2238;
-    }
-    .calendar-note {
-      font-size: 10px;
-      color: var(--text-muted);
-      margin-top: 8px;
-    }
-
-    /* ── Todos ── */
-    .todos-panel { display: flex; flex-direction: column; gap: 0; }
-
-    .mit-header {
+    .kanban-col-header {
       font-size: 9px;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.18em;
-      color: var(--mit-color);
-      margin-bottom: 10px;
-      padding-bottom: 6px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .todo-item {
+      padding-bottom: 8px;
+      border-bottom: 2px solid;
+      margin-bottom: 12px;
       display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .kanban-col-header.must   { color: var(--accent);  border-color: var(--accent);  }
+    .kanban-col-header.should { color: var(--warn);    border-color: var(--warn);    }
+    .kanban-col-header.could  { color: var(--purple);  border-color: var(--purple);  }
+    .col-count {
+      font-size: 9px;
+      opacity: 0.6;
+    }
+    .kanban-card {
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      padding: 11px 13px;
+      margin-bottom: 8px;
+      display: flex;
+      gap: 9px;
       align-items: flex-start;
-      gap: 10px;
-      padding: 10px 0;
-      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: border-color 0.15s, opacity 0.2s;
+      user-select: none;
     }
-    .todo-item:last-child { border-bottom: none; }
-
-    .todo-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: var(--mit-color);
+    .kanban-card:hover { border-color: var(--border2); filter: brightness(1.05); }
+    .kanban-card.done { opacity: 0.35; }
+    .kanban-card input[type="checkbox"] {
+      accent-color: var(--accent);
       flex-shrink: 0;
-      margin-top: 5px;
+      margin-top: 3px;
+      cursor: pointer;
+      width: 13px; height: 13px;
     }
-    .todo-dot.quick { background: var(--quick-color); }
-    .todo-dot.done { background: var(--text-muted); opacity: 0.4; }
-
-    .todo-content { flex: 1; }
-    .todo-text {
-      font-size: 13px;
+    .kanban-card-body { flex: 1; }
+    .kanban-card-text {
+      font-size: 12px;
       color: var(--text);
-      line-height: 1.4;
+      line-height: 1.45;
     }
-    .todo-text.done {
+    .kanban-card.done .kanban-card-text {
       text-decoration: line-through;
       color: var(--text-muted);
     }
-    .todo-tag {
+    .kanban-tag {
       display: inline-block;
       font-size: 9px;
       font-weight: 600;
@@ -271,73 +277,122 @@
       letter-spacing: 0.1em;
       padding: 1px 6px;
       border-radius: 3px;
-      margin-top: 4px;
+      margin-top: 5px;
     }
-    .tag-fluentrx { background: rgba(0,212,255,0.1); color: var(--accent); }
-    .tag-coder    { background: rgba(167,139,250,0.1); color: var(--quick-color); }
-    .tag-teacher  { background: rgba(16,185,129,0.1); color: var(--up); }
-    .tag-trader   { background: rgba(245,158,11,0.1); color: var(--warn); }
-    .tag-fred     { background: rgba(100,116,139,0.1); color: var(--text-muted); }
-
-    .quick-divider {
-      font-size: 9px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.18em;
-      color: var(--quick-color);
-      padding: 12px 0 8px;
-      border-bottom: 1px solid var(--border);
-      margin-top: 4px;
-    }
-
-    /* ── Revenue Row ── */
-    .revenue-row {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 14px;
-      margin-bottom: 18px;
-    }
-    .rev-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 16px 18px;
-    }
-    .rev-label {
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.14em;
-      color: var(--text-muted);
-      margin-bottom: 6px;
-    }
-    .rev-value {
-      font-family: 'Space Mono', monospace;
-      font-size: 22px;
-      font-weight: 700;
-      margin-bottom: 4px;
-    }
-    .rev-value.live { color: var(--up); }
-    .rev-value.manual { color: var(--warn); }
-    .rev-value.total { color: var(--accent); }
-    .rev-sub { font-size: 11px; color: var(--text-muted); }
-    .rev-source {
-      font-size: 9px;
-      font-family: 'Space Mono', monospace;
-      color: var(--text-muted);
-      margin-top: 8px;
-      padding-top: 8px;
-      border-top: 1px solid var(--border);
-    }
-
-    /* ── Manual income input hint ── */
-    .manual-hint {
-      font-size: 10px;
+    .tag-fluentrx { background: rgba(0,212,255,0.1);   color: var(--c-fluentrx); }
+    .tag-coder    { background: rgba(167,139,250,0.1);  color: var(--c-coder);    }
+    .tag-teacher  { background: rgba(16,185,129,0.1);   color: var(--c-teacher);  }
+    .tag-trader   { background: rgba(245,158,11,0.1);   color: var(--c-trader);   }
+    .tag-fred     { background: rgba(100,116,139,0.1);  color: var(--c-fred);     }
+    .kanban-empty {
+      font-size: 11px;
       color: var(--text-muted);
       font-style: italic;
-      margin-top: 4px;
+      padding: 8px 0;
     }
 
-    /* ── Footer ── */
+    /* ── Calendar Panel ──────────────────────── */
+    .cal-auth-btn {
+      background: var(--accent-dim);
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      border-radius: 5px;
+      padding: 5px 12px;
+      font-size: 10px;
+      font-family: 'Space Mono', monospace;
+      cursor: pointer;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+    .cal-auth-btn:hover { background: rgba(0, 212, 255, 0.2); }
+    .cal-auth-btn.connected { color: var(--up); border-color: var(--up); background: rgba(16,185,129,0.1); }
+
+    .cal-setup-box {
+      padding: 16px;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+    .cal-setup-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+    .cal-setup-steps {
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.7;
+      counter-reset: step;
+    }
+    .cal-setup-steps li {
+      counter-increment: step;
+      list-style: none;
+      padding-left: 4px;
+    }
+    .cal-setup-steps li::before {
+      content: counter(step) ". ";
+      color: var(--accent);
+      font-family: 'Space Mono', monospace;
+    }
+    .cal-setup-steps code {
+      font-family: 'Space Mono', monospace;
+      background: var(--border2);
+      padding: 0 4px;
+      border-radius: 3px;
+      font-size: 10px;
+      color: var(--accent);
+    }
+
+    .cal-loading {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-align: center;
+      padding: 24px 0;
+      font-style: italic;
+    }
+    .cal-day-group { margin-bottom: 14px; }
+    .cal-day-label {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid var(--border);
+    }
+    .cal-event {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 7px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .cal-event:last-child { border-bottom: none; }
+    .cal-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 4px;
+    }
+    .cal-event-title { font-size: 12px; color: var(--text); line-height: 1.3; }
+    .cal-event-time {
+      font-size: 10px;
+      color: var(--text-muted);
+      font-family: 'Space Mono', monospace;
+      margin-top: 2px;
+    }
+    .cal-empty {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-align: center;
+      padding: 20px 0;
+      font-style: italic;
+    }
+
+    /* ── Footer ──────────────────────────────── */
     .footer {
       border-top: 1px solid var(--border);
       padding: 12px 28px;
@@ -347,19 +402,21 @@
       font-size: 10px;
       font-family: 'Space Mono', monospace;
       color: var(--text-muted);
+      margin-top: 20px;
     }
 
-    /* ── Responsive ── */
-    @media (max-width: 1100px) {
-      .kpi-row { grid-template-columns: repeat(3, 1fr); }
+    /* ── Responsive ──────────────────────────── */
+    @media (max-width: 1200px) {
       .body-grid { grid-template-columns: 1fr; }
     }
-    @media (max-width: 720px) {
-      .main { padding: 14px 14px; }
-      .header { padding: 14px 16px; }
+    @media (max-width: 900px) {
+      .kanban-board { grid-template-columns: 1fr; }
       .kpi-row { grid-template-columns: repeat(2, 1fr); }
-      .revenue-row { grid-template-columns: 1fr; }
-      .kpi-value { font-size: 22px; }
+    }
+    @media (max-width: 600px) {
+      .main { padding: 14px; }
+      .header, .tab-nav { padding-left: 14px; padding-right: 14px; }
+      .kpi-row { grid-template-columns: 1fr; }
       .footer { flex-direction: column; gap: 6px; text-align: center; }
     }
   </style>
@@ -367,226 +424,107 @@
 <body>
 
 <!-- ══════════════════════════════════════════
-  DATA — update these blocks when refreshing
-  Stripe data: Fred pulls via API and updates STRIPE_DATA
-  Manual income: Clint updates MANUAL_DATA
-  Todos: Fred updates from Mission-Control/todos.md
-══════════════════════════════════════════ -->
+  ██████████ DATA BLOCK ████████████████████
+  Update these constants to refresh dashboard.
+  Fred manages TODOS. Clint manages MANUAL_DATA.
+  ══════════════════════════════════════════ -->
 <script>
-  // ── STRIPE DATA (Fred updates via API) ──────────────────
+
+  /* ──────────────────────────────────────────
+     GOOGLE CALENDAR SETUP (one-time)
+     ──────────────────────────────────────────
+     1. Go to: console.cloud.google.com
+     2. Create project → "Fred Dashboard"
+     3. APIs & Services → Library → Enable "Google Calendar API"
+     4. APIs & Services → OAuth consent screen
+        - User type: External
+        - Add your email as test user
+        - Scopes: add calendar.readonly
+     5. Credentials → Create Credentials → OAuth 2.0 Client ID
+        - Application type: Web application
+        - Authorized JS origins: https://clintryan.github.io
+     6. Copy Client ID and paste below
+     ──────────────────────────────────────────
+  */
+  const GOOGLE_CLIENT_ID = 'YOUR_CLIENT_ID_HERE';
+
+  /* ── Stripe (Fred updates via API) */
   const STRIPE_DATA = {
-    mtd_revenue: 437,          // USD, month-to-date Stripe charges
-    last_month: 950,           // USD, previous month total
-    last_updated: "2026-04-01" // date Fred last pulled from Stripe
+    mtd_revenue:  437,
+    last_month:   950,
+    last_updated: "2026-04-05"
   };
 
-  // ── MANUAL INCOME (Clint updates) ───────────────────────
+  /* ── Manual income (Clint updates) */
   const MANUAL_DATA = {
-    teaching_mtd: 0,           // Bangkok teaching salary (pro-rated, starts May)
-    other_mtd: 0,              // any other income this month
-    note: "Teaching starts May 5"
+    teaching_mtd: 0,
+    other_mtd:    0,
+    note:         "Teaching starts May 5"
   };
 
-  // ── SESSION DATA (Fred updates from calendar) ────────────
+  /* ── Sessions + students */
   const SESSION_DATA = {
-    sessions_mtd: 16,          // classes taught this month (April, as of today)
+    sessions_mtd:        16,
     sessions_last_month: 38,
-    active_students: 12,
-    trials_mtd: 2
+    active_students:     12,
+    trials_mtd:          2
   };
 
-  // ── FRED GOAL ────────────────────────────────────────────
+  /* ── April revenue goal (recoup Claude Max) */
   const GOAL = {
-    target: 250,               // USD — recoup Claude Max cost by April 30
-    current: 0,                // update as revenue tied to Fred's work comes in
+    target:   250,
+    current:  0,
     deadline: "2026-04-30"
   };
 
-  // ── TODOS (Fred manages — MITs first, then quick wins) ──
+  /* ── Todos: Must / Should / Could + persona tag
+     Tags: fluentrx | coder | teacher | trader | fred
+     Fred reprioritizes each session from todos.md
+  */
   const TODOS = {
-    mits: [
-      { text: "Send Newton rejection — draft ready, to: brian.d@newton.ac.th, CC: joshua.e@newton.ac.th", tag: "teacher", done: false },
-      { text: "Chase BCC contract — signing April 10, 10am, BCC Silom", tag: "teacher", done: false },
-      { text: "Reply to Nancy Lin — confirm weekend time slot, start April 24", tag: "fluentrx", done: false },
-      { text: "Deploy welcome email sequence to list (~300 subs)", tag: "fluentrx", done: false },
+    must: [
+      { id: 'newton-rejection', text: "Send Newton rejection — draft ready, to: brian.d@newton.ac.th, CC: joshua.e@newton.ac.th", tag: "teacher" },
+      { id: 'bcc-contract',     text: "Chase BCC contract — signing April 10, 10am, BCC Silom. Contract not received.", tag: "teacher" },
+      { id: 'nancy-lin',        text: "Reply Nancy Lin — pick a time slot (Fri eve / Sat / Sun), confirm April 24 start", tag: "fluentrx" },
+      { id: 'welcome-seq',      text: "Deploy welcome email sequence — 4 emails drafted, 3 checks before going live", tag: "fluentrx" },
     ],
-    quick: [
-      { text: "Decide weekend schedule post-May 5 (how many sessions, which days)", tag: "fluentrx", done: false },
-      { text: "FluentRx rebrand — pick direction and domain", tag: "fluentrx", done: false },
-      { text: "italki setup — approved, never configured", tag: "fluentrx", done: false },
-      { text: "Take fluentrx.com down / make private before May 5", tag: "fluentrx", done: false },
-      { text: "Call Stripe API — verify key, pull April revenue data", tag: "fred", done: false },
+    should: [
+      { id: 'weekend-sched',  text: "Decide weekend schedule post-May 5 (how many sessions, which days)", tag: "fluentrx" },
+      { id: 'price-raise',    text: "Price raise for new students — do alongside rebrand", tag: "fluentrx" },
+      { id: 'rebrand',        text: "FluentRx rebrand — brainstorm done, pick direction + domain", tag: "fluentrx" },
+      { id: 'italki',         text: "italki profile setup — approved, never configured. Zero-cost acquisition.", tag: "fluentrx" },
+      { id: 'fluentrx-down',  text: "Take fluentrx.com down / make private before May 5 (work permit)", tag: "fluentrx" },
+      { id: 'stripe-api',     text: "Call Stripe API — verify restricted key, pull April revenue data", tag: "fred" },
+    ],
+    could: [
+      { id: 'marketplace',   text: "Update AmazingTalker, Preply, italki profiles — stale, wrong brand voice", tag: "fluentrx" },
+      { id: 'fiverr',        text: "First Fiverr/Upwork listing — AI workflow automations angle", tag: "coder" },
+      { id: 'resumes',       text: "Update all 3 resumes — replace Toronto with Bangkok", tag: "fred" },
+      { id: 'crypto-bot',    text: "Crypto bot project — waiting on Paradise's training docs", tag: "trader" },
+      { id: 'ai-tutor',      text: "AI tutor agent moonshot (CoderClint × FluentRx crossover)", tag: "coder" },
+      { id: 'voice-agent',   text: "Voice agent first build — high potential, never built one", tag: "coder" },
     ]
   };
 
-  // ── CALENDAR IDs (edit to add/remove) ──────────────────
-  // NOTE: These Google Calendars must be set to "Public" or you must be
-  // signed in to Google in this browser for the embed to load.
-  const CALENDAR_IDS = [
-    "fluentrx@gmail.com",
-    "clintteacher@gmail.com",
-    "coderclint@gmail.com",
-    "traderskinflint@gmail.com"
-  ];
-</script>
-
-<!-- HEADER -->
-<header class="header">
-  <div class="header-left">
-    <div>
-      <div class="logo">FRED</div>
-      <div class="logo-sub">Command Center · Clint Ryan</div>
-    </div>
-  </div>
-  <div class="header-meta">
-    <div class="header-date" id="header-date">—</div>
-    <div id="header-stripe-updated">Stripe data: —</div>
-  </div>
-</header>
-
-<div class="main">
-
-  <!-- KPI CARDS -->
-  <div class="kpi-row">
-
-    <!-- MRR / MTD Revenue -->
-    <div class="kpi-card">
-      <div class="kpi-label">Revenue MTD</div>
-      <div class="kpi-value" id="kpi-mtd">—</div>
-      <div class="kpi-delta" id="kpi-mtd-delta">—</div>
-      <div class="kpi-sub">Stripe + manual income</div>
-    </div>
-
-    <!-- Active Students -->
-    <div class="kpi-card">
-      <div class="kpi-label">Active Students</div>
-      <div class="kpi-value" id="kpi-students">—</div>
-      <div class="kpi-delta neutral">— recurring this month</div>
-      <div class="kpi-sub">
-        <span id="kpi-trials">—</span> trial(s) this month
-      </div>
-    </div>
-
-    <!-- April Goal -->
-    <div class="kpi-card warn">
-      <div class="kpi-label">April Goal (Fred)</div>
-      <div class="kpi-value" id="kpi-goal-pct">—</div>
-      <div class="goal-bar-wrap">
-        <div class="goal-bar-track">
-          <div class="goal-bar-fill" id="goal-bar" style="width:0%"></div>
-        </div>
-        <div class="goal-bar-pct" id="goal-bar-label">$0 of $250 — recoup Claude Max</div>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- BODY: Calendar + Todos -->
-  <div class="body-grid">
-
-    <!-- Calendar -->
-    <div class="panel">
-      <div class="section-header">
-        <div class="section-title">Calendar</div>
-        <div class="section-badge">FluentRx · Teacher · CoderClint · Trader</div>
-      </div>
-      <div class="calendar-wrap" id="calendar-wrap">
-        <!-- injected by script -->
-      </div>
-      <div class="calendar-note">⚠ Must be signed in to Google in this browser. Calendars must be set to Public or shared.</div>
-    </div>
-
-  </div>
-
-  <!-- TODOS (full-width, below calendar) -->
-  <div class="panel" style="margin-bottom: 18px;">
-    <div class="section-header">
-      <div class="section-title">Today's Focus</div>
-      <div class="section-badge">Fred-managed</div>
-    </div>
-    <div class="todos-panel todos-full" id="todos-panel">
-      <!-- injected by script -->
-    </div>
-  </div>
-
-</div>
-
-<!-- FOOTER -->
-<footer class="footer">
-  <div>FRED v1 · Built 2026-04-01</div>
-  <div id="footer-refresh">Last data pull: —</div>
-  <div>github.com/clintryan/fred</div>
-</footer>
-
-<!-- ══════════════════════════════════════════
-  RENDER SCRIPT
-══════════════════════════════════════════ -->
-<script>
-  // Date helpers
-  function today() { return new Date(); }
-  function fmtDate(d) {
-    return d.toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
-  }
-  function daysUntil(dateStr) {
-    const target = new Date(dateStr + 'T00:00:00+07:00');
-    const now = new Date();
-    return Math.max(0, Math.ceil((target - now) / (1000 * 60 * 60 * 24)));
-  }
-  function pctChange(current, last) {
-    if (!last) return null;
-    return Math.round(((current - last) / last) * 100);
-  }
-
-  // ── Header
-  document.getElementById('header-date').textContent = fmtDate(today());
-  document.getElementById('header-stripe-updated').textContent = 'Stripe data: ' + STRIPE_DATA.last_updated;
-
-  // ── KPI: Revenue MTD
-  const totalMTD = STRIPE_DATA.mtd_revenue + MANUAL_DATA.teaching_mtd + MANUAL_DATA.other_mtd;
-  document.getElementById('kpi-mtd').textContent = '$' + totalMTD.toLocaleString();
-  const revDelta = pctChange(totalMTD, STRIPE_DATA.last_month);
-  if (revDelta !== null) {
-    const el = document.getElementById('kpi-mtd-delta');
-    el.textContent = (revDelta >= 0 ? '↑ ' : '↓ ') + Math.abs(revDelta) + '% vs last month';
-    el.className = 'kpi-delta ' + (revDelta >= 0 ? 'up' : 'down');
-  }
-
-  // ── KPI: Students
-  document.getElementById('kpi-students').textContent = SESSION_DATA.active_students;
-  document.getElementById('kpi-trials').textContent = SESSION_DATA.trials_mtd;
-
-  // ── KPI: Goal
-  const goalPct = Math.min(100, Math.round((GOAL.current / GOAL.target) * 100));
-  document.getElementById('kpi-goal-pct').textContent = goalPct + '%';
-  const bar = document.getElementById('goal-bar');
-  bar.style.width = goalPct + '%';
-  if (goalPct < 30) bar.className = 'goal-bar-fill danger';
-  else if (goalPct < 70) bar.className = 'goal-bar-fill warn';
-  document.getElementById('goal-bar-label').textContent =
-    '$' + GOAL.current + ' of $' + GOAL.target + ' — recoup Claude Max';
-
-  // ── Footer
-  document.getElementById('footer-refresh').textContent =
-    'Last data pull: ' + STRIPE_DATA.last_updated;
-
-  // ── Calendar embed
-  const calSrc = CALENDAR_IDS
-    .map(id => 'src=' + encodeURIComponent(id))
-    .join('&');
-  const calURL = 'https://calendar.google.com/calendar/embed?' + calSrc +
-    '&ctz=Asia%2FBangkok&mode=WEEK&showNav=1&showTitle=0&showPrint=0&showTabs=0&showCalendars=1&showTz=0';
-  document.getElementById('calendar-wrap').innerHTML =
-    '<iframe src="' + calURL + '" height="520"></iframe>';
-
-  // ── Todos
-  const tagMap = {
-    fluentrx: 'tag-fluentrx',
-    coder:    'tag-coder',
-    teacher:  'tag-teacher',
-    trader:   'tag-trader',
-    fred:     'tag-fred'
+  /* ── Personas */
+  const PERSONAS = {
+    all:      { label: 'ALL',             color: '#00D4FF', tag: null,       calId: null },
+    fluentrx: { label: 'FluentRx',        color: '#00D4FF', tag: 'fluentrx', calId: 'fluentrx@gmail.com' },
+    coder:    { label: 'CoderClint',      color: '#A78BFA', tag: 'coder',    calId: 'coderclint@gmail.com' },
+    teacher:  { label: 'ClintTeacher',    color: '#10B981', tag: 'teacher',  calId: 'clintteacher@gmail.com' },
+    trader:   { label: 'TraderSkinFlint', color: '#F59E0B', tag: 'trader',   calId: 'traderskinflint@gmail.com' },
   };
-  const tagLabel = {
+
+  /* ── Calendar sources (for event fetching) */
+  const CALENDAR_SOURCES = [
+    { id: 'fluentrx@gmail.com',       tag: 'fluentrx', color: '#00D4FF' },
+    { id: 'clintteacher@gmail.com',    tag: 'teacher',  color: '#10B981' },
+    { id: 'coderclint@gmail.com',      tag: 'coder',    color: '#A78BFA' },
+    { id: 'traderskinflint@gmail.com', tag: 'trader',   color: '#F59E0B' },
+  ];
+
+  /* ── Tag display labels */
+  const TAG_LABELS = {
     fluentrx: 'FluentRx',
     coder:    'CoderClint',
     teacher:  'Teacher',
@@ -594,26 +532,550 @@
     fred:     'Fred'
   };
 
-  function renderTodo(item, dotClass) {
-    return `<div class="todo-item">
-      <div class="todo-dot ${item.done ? 'done' : dotClass}"></div>
-      <div class="todo-content">
-        <div class="todo-text ${item.done ? 'done' : ''}">${item.text}</div>
-        <span class="todo-tag ${tagMap[item.tag]}">${tagLabel[item.tag]}</span>
+  /* ── Build Log
+     Fred updates this after every session that produces a shipped artifact.
+     This data will feed the build-in-public strategy for @__fluentrx__ / @__kryptoklint__.
+     Fields: date, title, description, type (feature|automation|fix|infra), tag (persona)
+  */
+  const BUILD_LOG = [
+    {
+      date:        "2026-04-06",
+      title:       "Automated Class Report Pipeline",
+      description: "After each class, Tactiq saves the transcript to Google Drive. Google pushes a notification to the FluentRx app, which fetches the transcript, calls the Claude API to generate a structured JSON session report, saves it to the student's profile, and emails them — with zero manual steps. Matches transcripts to appointments by time window. Idempotent (never double-processes).",
+      type:        "automation",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-06",
+      title:       "Drive Pipeline On/Off Toggle",
+      description: "Added DRIVE_PIPELINE_ENABLED config var to the FluentRx Rails app. Flip it in Heroku in 10 seconds to pause or resume the automated report pipeline without a deploy. Useful for controlling Claude API token spend.",
+      type:        "infra",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-05",
+      title:       "Fred Dashboard — Live on GitHub Pages",
+      description: "Built and deployed a personal command-center dashboard at clintryan.github.io/fred-dashboard. Dark command-center aesthetic. Tabs for each persona (FluentRx, CoderClint, ClintTeacher, TraderSkinFlint). MoSCoW kanban, KPI cards, upcoming calendar panel. Fred updates the data block each session.",
+      type:        "feature",
+      tag:         "fred"
+    },
+    {
+      date:        "2026-04-05",
+      title:       "Friday Fluency Fix — Welcome Email Sequence",
+      description: "Drafted a 4-email onboarding sequence for new FluentRx subscribers (~300 contacts, no welcome flow). Day 0 / Day 3 / Day 7 / Day 12 cadence. Designed to convert cold subscribers into trial bookings. Pending: FRIDAY10 discount code setup before going live.",
+      type:        "feature",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-06",
+      title:       "Freddy Fluent — Operational Knowledge Base",
+      description: "Built a full operational context system for the FluentRx business: _manager.md (voice, rules, draft workflow), _domain-logic.md (credit system, bookings, wallet, webhooks), _irb-playbook.md (Rails console recipes), _schema-snapshot.md (DB structure), symlinked live pricing + FAQ data. Claude Code now auto-loads this context for any FluentRx codebase session.",
+      type:        "infra",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-01",
+      title:       "Session Report Generator — Live",
+      description: "After each FluentRx class, a transcript is processed into a structured JSON report covering grammar corrections, pronunciation feedback, vocabulary items, talk-time analytics, and personalised next-session goals. The report is POSTed to the Rails app via webhook and the student receives an email with a link to their report page.",
+      type:        "automation",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-01",
+      title:       "Worksheet Generator — Live",
+      description: "Generates Talk Business Series (TBS) worksheets from YouTube video transcripts. Two registers: formal and casual. Worksheets include vocabulary, discussion questions, and exercises. Built as a Gemini IDE agent automation — zero manual formatting.",
+      type:        "automation",
+      tag:         "fluentrx"
+    },
+  ];
+</script>
+
+<!-- HEADER -->
+<header class="header">
+  <div>
+    <div class="logo">FRED</div>
+    <div class="logo-sub">Command Center · Clint Ryan</div>
+  </div>
+  <div class="header-meta">
+    <div class="header-date" id="header-date">—</div>
+    <div id="header-stripe-note">Stripe: —</div>
+  </div>
+</header>
+
+<!-- PERSONA TABS -->
+<nav class="tab-nav" id="tab-nav">
+  <button class="tab-btn active" data-persona="all">ALL</button>
+  <button class="tab-btn" data-persona="fluentrx">FluentRx</button>
+  <button class="tab-btn" data-persona="coder">CoderClint</button>
+  <button class="tab-btn" data-persona="teacher">ClintTeacher</button>
+  <button class="tab-btn" data-persona="trader">TraderSkinFlint</button>
+</nav>
+
+<!-- MAIN CONTENT -->
+<div class="main">
+
+  <!-- KPI ROW (rendered dynamically per tab) -->
+  <div class="kpi-row" id="kpi-row"></div>
+
+  <!-- BODY: Kanban + Calendar -->
+  <div class="body-grid">
+
+    <!-- KANBAN BOARD -->
+    <div class="panel">
+      <div class="section-header">
+        <div class="section-title" id="kanban-title">All Todos</div>
+        <div class="section-badge">MoSCoW · click to complete</div>
       </div>
+      <div class="kanban-board" id="kanban-board"></div>
+    </div>
+
+    <!-- CALENDAR PANEL -->
+    <div class="panel">
+      <div class="section-header">
+        <div class="section-title">Upcoming</div>
+        <button class="cal-auth-btn" id="cal-auth-btn" onclick="handleCalAuth()">Connect Calendar</button>
+      </div>
+      <div id="calendar-content"></div>
+    </div>
+
+  </div>
+
+  <!-- BUILD LOG -->
+  <div class="panel" style="margin-top:0;">
+    <div class="section-header">
+      <div class="section-title">Build Log</div>
+      <div class="section-badge">shipped · build in public</div>
+    </div>
+    <div id="build-log-content"></div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div>FRED v2 · April 2026</div>
+  <div id="footer-note">—</div>
+  <div>clintryan.github.io/fred-dashboard</div>
+</footer>
+
+<!-- ══════════════════════════════════════════
+  RENDER SCRIPT
+  ══════════════════════════════════════════ -->
+<script>
+
+  // ── State
+  let currentPersona = 'all';
+  let calAccessToken  = null;
+  let allCalEvents    = [];
+  let tokenClient     = null;
+  const IS_CAL_CONFIGURED = (GOOGLE_CLIENT_ID !== 'YOUR_CLIENT_ID_HERE');
+
+  // ── Helpers
+  function today() { return new Date(); }
+  function fmtDate(d) {
+    return d.toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  }
+  function daysUntil(dateStr) {
+    const target = new Date(dateStr + 'T00:00:00');
+    const now    = new Date();
+    return Math.max(0, Math.ceil((target - now) / 86400000));
+  }
+  function pctChange(cur, last) {
+    if (!last) return null;
+    return Math.round(((cur - last) / last) * 100);
+  }
+  function getDone() {
+    try { return new Set(JSON.parse(localStorage.getItem('fred_checked') || '[]')); }
+    catch { return new Set(); }
+  }
+  function saveDone(set) {
+    localStorage.setItem('fred_checked', JSON.stringify([...set]));
+  }
+
+  // ── Bootstrap header
+  document.getElementById('header-date').textContent = fmtDate(today());
+  document.getElementById('header-stripe-note').textContent = 'Stripe: ' + STRIPE_DATA.last_updated;
+  document.getElementById('footer-note').textContent = 'Stripe data: ' + STRIPE_DATA.last_updated;
+
+  // ── Tab switching
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentPersona = btn.dataset.persona;
+      renderKPI();
+      renderKanban();
+      renderCalendarView();
+    });
+  });
+
+  // ═══════════════════════════════════════════
+  // KPI RENDERING
+  // ═══════════════════════════════════════════
+  function renderKPI() {
+    const row = document.getElementById('kpi-row');
+    const totalMTD = STRIPE_DATA.mtd_revenue + MANUAL_DATA.teaching_mtd + MANUAL_DATA.other_mtd;
+    const goalPct  = Math.min(100, Math.round((GOAL.current / GOAL.target) * 100));
+    const revDelta = pctChange(totalMTD, STRIPE_DATA.last_month);
+
+    let cards = [];
+
+    if (currentPersona === 'all') {
+      cards = [
+        {
+          label: 'Revenue MTD',
+          value: '$' + totalMTD.toLocaleString(),
+          delta: revDelta,
+          sub:   'Stripe + manual · $' + STRIPE_DATA.last_month.toLocaleString() + ' last month',
+        },
+        {
+          label: 'Active Students',
+          value: SESSION_DATA.active_students,
+          sub:   SESSION_DATA.trials_mtd + ' trial(s) this month · ' + SESSION_DATA.sessions_mtd + ' sessions MTD',
+        },
+        {
+          label: 'April Goal (Fred)',
+          value: goalPct + '%',
+          warn:  true,
+          goal:  { current: GOAL.current, target: GOAL.target, pct: goalPct },
+        },
+      ];
+
+    } else if (currentPersona === 'fluentrx') {
+      const sesDelta = pctChange(SESSION_DATA.sessions_mtd, SESSION_DATA.sessions_last_month);
+      cards = [
+        {
+          label: 'Revenue MTD',
+          value: '$' + STRIPE_DATA.mtd_revenue.toLocaleString(),
+          delta: revDelta,
+          sub:   'Stripe · last month $' + STRIPE_DATA.last_month.toLocaleString(),
+        },
+        {
+          label: 'Sessions MTD',
+          value: SESSION_DATA.sessions_mtd,
+          delta: sesDelta,
+          sub:   'vs ' + SESSION_DATA.sessions_last_month + ' last month',
+          green: true,
+        },
+        {
+          label: 'Active Students',
+          value: SESSION_DATA.active_students,
+          sub:   SESSION_DATA.trials_mtd + ' trial(s) · ~$34–40/session',
+        },
+      ];
+
+    } else if (currentPersona === 'teacher') {
+      const dLeft = daysUntil('2026-05-05');
+      cards = [
+        { label: 'Days to BCC Start',  value: dLeft,        sub:  'May 5, 2026',        warn: true },
+        { label: 'Contract',           value: 'PENDING',    sub:  'Signing Apr 10, 10am · BCC Silom', warn: true },
+        { label: 'Monthly Salary',     value: '฿73k',       sub:  '55k base + 14k allowance + 4k homeroom' },
+      ];
+
+    } else if (currentPersona === 'coder') {
+      cards = [
+        { label: 'Active Projects',    value: '1',          sub:  'bybit-trading-bot (live)' },
+        { label: 'Revenue Opps',       value: '4',          sub:  'Fiverr · Voice Agent · Landing · SaaS' },
+        { label: 'Top Priority',       value: 'Fiverr',     sub:  'AI automations angle — first listing' },
+      ];
+
+    } else if (currentPersona === 'trader') {
+      cards = [
+        { label: 'SOL Portfolio',      value: '~$1k',       sub:  '3E5D…hZEZr · Nest egg', warn: true },
+        { label: 'Bot Status',         value: 'WAITING',    sub:  'Pending Paradise training docs' },
+        { label: 'Job Monitoring',     value: 'PASSIVE',    sub:  'Singapore / Asian FinTech roles only' },
+      ];
+    }
+
+    row.innerHTML = cards.map(c => buildKPICard(c)).join('');
+  }
+
+  function buildKPICard(c) {
+    const cls = c.warn ? ' warn' : c.green ? ' green' : '';
+    let deltaHtml = '';
+    if (c.delta !== null && c.delta !== undefined) {
+      const dir = c.delta >= 0 ? 'up' : 'down';
+      const arrow = c.delta >= 0 ? '↑' : '↓';
+      deltaHtml = `<div class="kpi-delta ${dir}">${arrow} ${Math.abs(c.delta)}% vs last month</div>`;
+    }
+    let goalHtml = '';
+    if (c.goal) {
+      const barCls = c.goal.pct < 30 ? ' danger' : c.goal.pct < 70 ? ' warn' : '';
+      goalHtml = `
+        <div class="goal-bar-track">
+          <div class="goal-bar-fill${barCls}" style="width:${c.goal.pct}%"></div>
+        </div>
+        <div class="goal-bar-pct">$${c.goal.current} of $${c.goal.target} — recoup Claude Max</div>`;
+    }
+    return `<div class="kpi-card${cls}">
+      <div class="kpi-label">${c.label}</div>
+      <div class="kpi-value">${c.value}</div>
+      ${deltaHtml}
+      ${goalHtml}
+      ${c.sub ? `<div class="kpi-sub">${c.sub}</div>` : ''}
     </div>`;
   }
 
-  let mitsHtml = '<div><div class="mit-header">⬥ Must Do</div>';
-  TODOS.mits.forEach(t => { mitsHtml += renderTodo(t, ''); });
-  mitsHtml += '</div>';
+  // ═══════════════════════════════════════════
+  // KANBAN RENDERING
+  // ═══════════════════════════════════════════
+  function renderKanban() {
+    const persona = PERSONAS[currentPersona];
+    const tagFilter = persona.tag;
 
-  let quickHtml = '<div><div class="quick-divider" style="padding-top:0;">⬥ Quick Wins</div>';
-  TODOS.quick.forEach(t => { quickHtml += renderTodo(t, 'quick'); });
-  quickHtml += '</div>';
+    document.getElementById('kanban-title').textContent =
+      tagFilter ? persona.label + ' Todos' : 'All Todos';
 
-  document.getElementById('todos-panel').innerHTML = mitsHtml + quickHtml;
+    function filter(todos) {
+      if (!tagFilter) return todos;                          // ALL: show everything
+      return todos.filter(t => t.tag === tagFilter);        // persona: strict filter
+    }
+
+    const must   = filter(TODOS.must);
+    const should = filter(TODOS.should);
+    const could  = filter(TODOS.could);
+    const done   = getDone();
+
+    function buildCards(items) {
+      if (!items.length) return '<div class="kanban-empty">Nothing here</div>';
+      // Sort: undone first, done at bottom
+      const sorted = [...items].sort((a, b) => {
+        const aDone = done.has(a.id) ? 1 : 0;
+        const bDone = done.has(b.id) ? 1 : 0;
+        return aDone - bDone;
+      });
+      return sorted.map(t => {
+        const isDone = done.has(t.id);
+        return `<div class="kanban-card ${isDone ? 'done' : ''}" onclick="toggleCard('${t.id}')">
+          <input type="checkbox" ${isDone ? 'checked' : ''}
+            onclick="event.stopPropagation(); toggleCard('${t.id}')" />
+          <div class="kanban-card-body">
+            <div class="kanban-card-text">${t.text}</div>
+            <span class="kanban-tag tag-${t.tag}">${TAG_LABELS[t.tag]}</span>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    document.getElementById('kanban-board').innerHTML = `
+      <div>
+        <div class="kanban-col-header must">
+          ⬥ Must Do <span class="col-count">${must.filter(t=>!done.has(t.id)).length}/${must.length}</span>
+        </div>
+        ${buildCards(must)}
+      </div>
+      <div>
+        <div class="kanban-col-header should">
+          ⬥ Should Do <span class="col-count">${should.filter(t=>!done.has(t.id)).length}/${should.length}</span>
+        </div>
+        ${buildCards(should)}
+      </div>
+      <div>
+        <div class="kanban-col-header could">
+          ⬥ Could Do <span class="col-count">${could.filter(t=>!done.has(t.id)).length}/${could.length}</span>
+        </div>
+        ${buildCards(could)}
+      </div>`;
+  }
+
+  window.toggleCard = function(id) {
+    const done = getDone();
+    done.has(id) ? done.delete(id) : done.add(id);
+    saveDone(done);
+    renderKanban();
+  };
+
+  // ═══════════════════════════════════════════
+  // GOOGLE CALENDAR INTEGRATION
+  // ═══════════════════════════════════════════
+  function initCalendar() {
+    const content = document.getElementById('calendar-content');
+    const authBtn = document.getElementById('cal-auth-btn');
+
+    if (!IS_CAL_CONFIGURED) {
+      authBtn.style.display = 'none';
+      content.innerHTML = `
+        <div class="cal-setup-box">
+          <div class="cal-setup-title">Setup required to connect Google Calendar</div>
+          <ol class="cal-setup-steps">
+            <li>Go to <code>console.cloud.google.com</code></li>
+            <li>Create project → Enable <code>Google Calendar API</code></li>
+            <li>OAuth consent screen → add your email as test user</li>
+            <li>Credentials → Create OAuth2 Client ID (Web app)<br>
+                JS origin: <code>https://clintryan.github.io</code></li>
+            <li>Paste Client ID into <code>GOOGLE_CLIENT_ID</code> in dashboard.html</li>
+          </ol>
+        </div>
+        <div class="cal-empty">Calendar not connected</div>`;
+      return;
+    }
+
+    content.innerHTML = '<div class="cal-loading">Click "Connect Calendar" to load events</div>';
+
+    // Init GIS token client (may need to wait for GIS to load)
+    function tryInitGIS() {
+      if (window.google && window.google.accounts) {
+        tokenClient = google.accounts.oauth2.initTokenClient({
+          client_id: GOOGLE_CLIENT_ID,
+          scope: 'https://www.googleapis.com/auth/calendar.readonly',
+          callback: async (resp) => {
+            if (resp.error) {
+              content.innerHTML = `<div class="cal-loading">Auth error: ${resp.error}</div>`;
+              return;
+            }
+            calAccessToken = resp.access_token;
+            authBtn.textContent = '✓ Connected';
+            authBtn.classList.add('connected');
+            await fetchAllCalendarEvents();
+          }
+        });
+      } else {
+        setTimeout(tryInitGIS, 500);
+      }
+    }
+    tryInitGIS();
+  }
+
+  window.handleCalAuth = function() {
+    if (!IS_CAL_CONFIGURED) return;
+    if (calAccessToken) {
+      // Already connected — re-fetch
+      fetchAllCalendarEvents();
+    } else if (tokenClient) {
+      tokenClient.requestAccessToken();
+    }
+  };
+
+  async function fetchAllCalendarEvents() {
+    const content = document.getElementById('calendar-content');
+    content.innerHTML = '<div class="cal-loading">Fetching events…</div>';
+
+    const now      = new Date();
+    const twoWeeks = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
+    const timeMin  = now.toISOString();
+    const timeMax  = twoWeeks.toISOString();
+
+    allCalEvents = [];
+
+    for (const src of CALENDAR_SOURCES) {
+      try {
+        const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(src.id)}/events`
+          + `?timeMin=${timeMin}&timeMax=${timeMax}&singleEvents=true&orderBy=startTime&maxResults=50`;
+        const res = await fetch(url, {
+          headers: { Authorization: `Bearer ${calAccessToken}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          allCalEvents.push(
+            ...(data.items || []).map(e => ({ ...e, _calTag: src.tag, _calColor: src.color }))
+          );
+        }
+      } catch (err) {
+        console.warn('Calendar fetch failed for', src.id, err);
+      }
+    }
+
+    // Sort by start time
+    allCalEvents.sort((a, b) => {
+      const da = new Date(a.start.dateTime || a.start.date + 'T00:00:00');
+      const db = new Date(b.start.dateTime || b.start.date + 'T00:00:00');
+      return da - db;
+    });
+
+    renderCalendarView();
+  }
+
+  function renderCalendarView() {
+    const content = document.getElementById('calendar-content');
+    if (!calAccessToken) return; // Not connected yet — leave placeholder
+
+    const persona = PERSONAS[currentPersona];
+    const filtered = persona.tag
+      ? allCalEvents.filter(e => e._calTag === persona.tag)
+      : allCalEvents;
+
+    if (!filtered.length) {
+      content.innerHTML = '<div class="cal-empty">No events in the next 14 days</div>';
+      return;
+    }
+
+    // Group by date
+    const groups = new Map();
+    for (const ev of filtered) {
+      const dt = new Date(ev.start.dateTime || ev.start.date + 'T00:00:00');
+      const key = dt.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push({ ev, dt });
+    }
+
+    let html = '';
+    for (const [day, items] of groups) {
+      html += `<div class="cal-day-group"><div class="cal-day-label">${day}</div>`;
+      for (const { ev, dt } of items) {
+        const isAllDay = !ev.start.dateTime;
+        const timeStr  = isAllDay
+          ? 'All day'
+          : dt.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit', hour12:true });
+        html += `<div class="cal-event">
+          <div class="cal-dot" style="background:${ev._calColor}"></div>
+          <div>
+            <div class="cal-event-title">${ev.summary || '(no title)'}</div>
+            <div class="cal-event-time">${timeStr}${ev.location ? ' · ' + ev.location : ''}</div>
+          </div>
+        </div>`;
+      }
+      html += '</div>';
+    }
+
+    content.innerHTML = html;
+  }
+
+  // ── Build Log
+  const TYPE_COLORS = {
+    automation: '#00D4FF',
+    feature:    '#A78BFA',
+    infra:      '#F59E0B',
+    fix:        '#F43F5E',
+  };
+  const TYPE_LABELS = {
+    automation: 'AUTOMATION',
+    feature:    'FEATURE',
+    infra:      'INFRA',
+    fix:        'FIX',
+  };
+
+  function renderBuildLog() {
+    const el = document.getElementById('build-log-content');
+    if (!el) return;
+    if (!BUILD_LOG.length) {
+      el.innerHTML = '<p style="color:var(--text-muted);padding:16px 0;font-size:12px;">No entries yet.</p>';
+      return;
+    }
+    el.innerHTML = BUILD_LOG.map(entry => {
+      const color = TYPE_COLORS[entry.type] || '#64748B';
+      const label = TYPE_LABELS[entry.type] || entry.type.toUpperCase();
+      const tagLabel = TAG_LABELS[entry.tag] || entry.tag;
+      return `
+        <div style="padding:14px 0;border-bottom:1px solid var(--border);display:flex;gap:16px;align-items:flex-start;">
+          <div style="flex-shrink:0;width:80px;font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace;padding-top:3px;">${entry.date}</div>
+          <div style="flex:1;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap;">
+              <span style="font-size:13px;font-weight:600;color:var(--text);">${entry.title}</span>
+              <span style="font-size:9px;font-weight:700;letter-spacing:0.1em;color:${color};background:${color}22;padding:2px 7px;border-radius:3px;">${label}</span>
+              <span style="font-size:9px;font-weight:600;letter-spacing:0.08em;color:var(--text-muted);background:var(--surface2);padding:2px 7px;border-radius:3px;">${tagLabel}</span>
+            </div>
+            <div style="font-size:12px;color:var(--text-muted);line-height:1.6;">${entry.description}</div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  // ── Boot
+  renderKPI();
+  renderKanban();
+  initCalendar();
+  renderBuildLog();
+
 </script>
-
 </body>
 </html>
