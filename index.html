@@ -291,6 +291,87 @@
       padding: 8px 0;
     }
 
+    /* ── Agent Badge ────────────────────────── */
+    .agent-badge {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 6px;
+      font-size: 10px;
+      font-family: 'Space Mono', monospace;
+      color: var(--text-muted);
+    }
+    .agent-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .agent-dot.active  { background: var(--up);   box-shadow: 0 0 4px var(--up); }
+    .agent-dot.done    { background: var(--text-muted); }
+    .agent-dot.blocked { background: var(--down); }
+    .agent-label { color: var(--text-muted); }
+    .agent-label.active  { color: var(--up); }
+    .agent-label.blocked { color: var(--down); }
+
+    /* ── Social Queue Panel ──────────────────── */
+    .social-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-top: 18px;
+    }
+    @media (max-width: 900px) { .social-row { grid-template-columns: 1fr; } }
+    .social-card {
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+    }
+    .social-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .social-persona {
+      font-size: 10px;
+      font-weight: 700;
+      font-family: 'Space Mono', monospace;
+      color: var(--accent);
+    }
+    .social-date {
+      font-size: 10px;
+      color: var(--text-muted);
+      font-family: 'Space Mono', monospace;
+    }
+    .social-draft {
+      font-size: 12px;
+      color: var(--text);
+      line-height: 1.55;
+      border-left: 2px solid var(--border2);
+      padding-left: 10px;
+      margin-bottom: 8px;
+      font-style: italic;
+    }
+    .social-status-badge {
+      display: inline-block;
+      font-size: 9px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 2px 7px;
+      border-radius: 3px;
+    }
+    .social-status-badge.draft  { background: rgba(245,158,11,0.15); color: var(--warn); }
+    .social-status-badge.posted { background: rgba(16,185,129,0.15); color: var(--up); }
+    .social-empty {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-style: italic;
+      padding: 8px 0;
+    }
+
     /* ── Calendar Panel ──────────────────────── */
     .cal-auth-btn {
       background: var(--accent-dim);
@@ -485,7 +566,7 @@
     must: [
       { id: 'newton-rejection', text: "Send Newton rejection — draft ready, to: brian.d@newton.ac.th, CC: joshua.e@newton.ac.th", tag: "teacher" },
       { id: 'bcc-contract',     text: "Chase BCC contract — signing April 10, 10am, BCC Silom. Contract not received.", tag: "teacher" },
-      { id: 'nancy-lin',        text: "Reply Nancy Lin — pick a time slot (Fri eve / Sat / Sun), confirm April 24 start", tag: "fluentrx" },
+      { id: 'nancy-lin',        text: "Nancy Lin — replied Apr 8. Offered weeknights 18–24 TW time + Sat 09–15 late April. Awaiting slot confirmation.", tag: "fluentrx" },
       { id: 'welcome-seq',      text: "Deploy welcome email sequence — 4 emails drafted, 3 checks before going live", tag: "fluentrx" },
     ],
     should: [
@@ -532,6 +613,23 @@
     fred:     'Fred'
   };
 
+  /* ── Agent Sessions
+     Fred updates this from Mission-Control/handoffs/*.md at session start.
+     status: 'active' | 'done' | 'blocked'
+  */
+  const AGENT_SESSIONS = [
+    // { id: 'worksheet-html', task: 'Worksheet generator — local HTML', tag: 'fluentrx', status: 'active', since: '2026-04-08', todoId: 'welcome-seq' },
+  ];
+
+  /* ── Social Queue
+     ⚠️  DO NOT EDIT MANUALLY.
+     Synced from Mission-Control/social-queue.md by Fred at session start.
+     status: 'draft' | 'posted'
+  */
+  const SOCIAL_QUEUE = [
+    // { date: '2026-04-08', persona: '@__kryptoklint__', tag: 'coder', draft: 'Tweet text here', status: 'draft' },
+  ];
+
   /* ── Build Log
      ⚠️  DO NOT EDIT MANUALLY.
      This array is synced from Mission-Control/build-log.md by Fred at session start.
@@ -541,6 +639,20 @@
      Fields: date, title, description, type (feature|automation|fix|infra), tag (persona)
   */
   const BUILD_LOG = [
+    {
+      date:        "2026-04-07",
+      title:       "Marketplace Intake Skill — AT + Preply Student Onboarding",
+      description: "Built a structured 8-step skill for onboarding new AmazingTalker or Preply students mid-package — retroactive session backfilling, order creation, Cal.com booking, and credit reconciliation. Handles AT-specific edge cases (order validation, session status, timezone offsets). Generates a ready-to-run Heroku handoff script so the whole intake takes one copy-paste.",
+      type:        "automation",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-07",
+      title:       "Marketplace Sync System — AmazingTalker + Preply → FluentRx + Cal.com",
+      description: "Replaced a manual copy-paste booking workflow with a fully automated hourly Heroku job. Fetches AT and Preply iCal feeds, parses upcoming sessions, creates Cal.com bookings with availability bypass (marketplace sessions fall outside normal scheduling windows), and deduplicates via a DB-backed event store that survives dyno restarts. Cancellations detected and cleaned up automatically.",
+      type:        "automation",
+      tag:         "fluentrx"
+    },
     {
       date:        "2026-04-06",
       title:       "Automated Class Report Pipeline",
@@ -639,6 +751,29 @@
         <button class="cal-auth-btn" id="cal-auth-btn" onclick="handleCalAuth()">Connect Calendar</button>
       </div>
       <div id="calendar-content"></div>
+    </div>
+
+  </div>
+
+  <!-- SOCIAL QUEUE + AGENT STATUS ROW -->
+  <div class="social-row" style="margin-top:18px;">
+
+    <!-- SOCIAL QUEUE -->
+    <div class="panel">
+      <div class="section-header">
+        <div class="section-title">Social Queue</div>
+        <div class="section-badge" id="social-queue-badge">ready to post</div>
+      </div>
+      <div id="social-queue-content"></div>
+    </div>
+
+    <!-- ACTIVE AGENTS -->
+    <div class="panel">
+      <div class="section-header">
+        <div class="section-title">Active Agents</div>
+        <div class="section-badge" id="agent-sessions-badge">dispatched sessions</div>
+      </div>
+      <div id="agent-sessions-content"></div>
     </div>
 
   </div>
@@ -848,13 +983,25 @@
         return aDone - bDone;
       });
       return sorted.map(t => {
-        const isDone = done.has(t.id);
+        const isDone   = done.has(t.id);
+        const agentSes = AGENT_SESSIONS.find(a => a.todoId === t.id);
+        let agentHtml  = '';
+        if (agentSes) {
+          const statusLabel = agentSes.status === 'active' ? '🔄 Agent active'
+                            : agentSes.status === 'done'   ? '✅ Agent done'
+                            : '⏸️ Blocked';
+          agentHtml = `<div class="agent-badge">
+            <div class="agent-dot ${agentSes.status}"></div>
+            <span class="agent-label ${agentSes.status}">${statusLabel} · ${agentSes.since}</span>
+          </div>`;
+        }
         return `<div class="kanban-card ${isDone ? 'done' : ''}" onclick="toggleCard('${t.id}')">
           <input type="checkbox" ${isDone ? 'checked' : ''}
             onclick="event.stopPropagation(); toggleCard('${t.id}')" />
           <div class="kanban-card-body">
             <div class="kanban-card-text">${t.text}</div>
             <span class="kanban-tag tag-${t.tag}">${TAG_LABELS[t.tag]}</span>
+            ${agentHtml}
           </div>
         </div>`;
       }).join('');
@@ -879,6 +1026,66 @@
         </div>
         ${buildCards(could)}
       </div>`;
+  }
+
+  // ═══════════════════════════════════════════
+  // SOCIAL QUEUE RENDERING
+  // ═══════════════════════════════════════════
+  function renderSocialQueue() {
+    const el    = document.getElementById('social-queue-content');
+    const badge = document.getElementById('social-queue-badge');
+    const drafts = SOCIAL_QUEUE.filter(p => p.status === 'draft');
+    badge.textContent = drafts.length ? drafts.length + ' ready to post' : 'all clear';
+
+    if (!SOCIAL_QUEUE.length) {
+      el.innerHTML = '<div class="social-empty">No drafts yet — domain agents write here at session closeout.</div>';
+      return;
+    }
+    el.innerHTML = SOCIAL_QUEUE.map(p => {
+      const statusCls = p.status === 'posted' ? 'posted' : 'draft';
+      const statusTxt = p.status === 'posted' ? '✅ Posted' : '📝 Draft';
+      return `<div class="social-card">
+        <div class="social-meta">
+          <span class="social-persona">${p.persona}</span>
+          <span class="social-date">${p.date}</span>
+        </div>
+        <div class="social-draft">${p.draft}</div>
+        <span class="social-status-badge ${statusCls}">${statusTxt}</span>
+        <span class="kanban-tag tag-${p.tag}" style="margin-left:6px">${TAG_LABELS[p.tag] || p.tag}</span>
+      </div>`;
+    }).join('');
+  }
+
+  // ═══════════════════════════════════════════
+  // ACTIVE AGENTS RENDERING
+  // ═══════════════════════════════════════════
+  function renderAgentSessions() {
+    const el    = document.getElementById('agent-sessions-content');
+    const badge = document.getElementById('agent-sessions-badge');
+    const active = AGENT_SESSIONS.filter(a => a.status === 'active');
+    badge.textContent = active.length ? active.length + ' running' : 'none dispatched';
+
+    if (!AGENT_SESSIONS.length) {
+      el.innerHTML = '<div class="social-empty">No active sessions — Fred dispatches agents from here.</div>';
+      return;
+    }
+    el.innerHTML = AGENT_SESSIONS.map(a => {
+      const statusLabel = a.status === 'active'  ? '🔄 In progress'
+                        : a.status === 'done'    ? '✅ Done'
+                        : '⏸️ Blocked';
+      const dotCls = a.status;
+      return `<div class="social-card">
+        <div class="social-meta">
+          <div class="agent-badge" style="margin:0">
+            <div class="agent-dot ${dotCls}"></div>
+            <span class="agent-label ${dotCls}" style="font-size:11px;font-weight:600">${statusLabel}</span>
+          </div>
+          <span class="social-date">${a.since}</span>
+        </div>
+        <div style="font-size:12px;color:var(--text);margin-bottom:6px">${a.task}</div>
+        <span class="kanban-tag tag-${a.tag}">${TAG_LABELS[a.tag] || a.tag}</span>
+      </div>`;
+    }).join('');
   }
 
   window.toggleCard = function(id) {
@@ -1078,6 +1285,8 @@
   renderKanban();
   initCalendar();
   renderBuildLog();
+  renderSocialQueue();
+  renderAgentSessions();
 
 </script>
 </body>
