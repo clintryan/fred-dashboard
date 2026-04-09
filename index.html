@@ -627,7 +627,10 @@
      status: 'draft' | 'posted'
   */
   const SOCIAL_QUEUE = [
-    // { date: '2026-04-08', persona: '@__kryptoklint__', tag: 'coder', draft: 'Tweet text here', status: 'draft' },
+    { date: '2026-04-10', persona: '@__fluentrx__', tag: 'fluentrx', draft: 'Swapping "but" for "however" is the same word, same meaning.\n\nBut one belongs in a business email and the other belongs in a text message.\n\nThis week\'s Friday Fix: the 4 connector swaps that instantly raise your register.\n\nFree: fluentrx.com/friday-fix/raise-your-register-connectors', status: 'draft' },
+    { date: '2026-04-10', persona: '@__fluentrx__', tag: 'fluentrx', draft: 'Know when to use "consequently" vs "therefore"?\n\nMost advanced learners don\'t. (It\'s not obvious.)\n\nFree practice sheet this week — 3 exercises, answer key included.\n\nfluentrx.com/practice/raise-your-register-connectors', status: 'draft' },
+    { date: '2026-04-10', persona: '@__teacherclint__', tag: 'teacher', draft: 'One thing I notice in almost every advanced student\'s writing:\n\nThey use "but" and "so" where a native speaker would use "however" and "consequently."\n\nIt\'s not wrong. It just sounds casual. And sometimes that matters a lot.\n\nNew Friday Fix on this 👇\nfluentrx.com/friday-fix/raise-your-register-connectors', status: 'draft' },
+    { date: '2026-04-10', persona: '@__teacherclint__', tag: 'teacher', draft: 'Quick question for advanced English learners:\n\nDo you know the punctuation rule for formal connectors?\n\n(Most people get this wrong even when they know the words.)\n\nAnswer in this week\'s free email: fluentrx.com/friday-fix/raise-your-register-connectors', status: 'draft' },
   ];
 
   /* ── Build Log
@@ -635,10 +638,52 @@
      This array is synced from Mission-Control/build-log.md by Fred at session start.
      To add an entry: append to build-log.md with "Synced: ❌" — Fred handles the rest.
      Feeds build-in-public strategy for @__fluentrx__ / @__teacherclint__ / @__kryptoklint__.
-     Last synced: 2026-04-07
+     Last synced: 2026-04-08
      Fields: date, title, description, type (feature|automation|fix|infra), tag (persona)
   */
   const BUILD_LOG = [
+    {
+      date:        "2026-04-09",
+      title:       "Practice Tab Fix + Claude API Timeout Increase",
+      description: "Two fixes shipped together. The Practice tab in every session report was always empty — Claude was outputting exercises under `practice_exercises` but the view expected `practice.questions`. Fixed by adding an explicit JSON skeleton to the prompt in report_format.md. Also bumped the Faraday read timeout from 120s to 300s — long transcripts (55k+ chars) were hitting the ceiling when calling the Claude API.",
+      type:        "fix",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-09",
+      title:       "Marketplace Sync — DB Write Fix + Cowork Skill Retired",
+      description: "The marketplace sync was creating Cal.com bookings but never writing appointments to the FluentRx DB — it relied on a Cal.com webhook round-trip that doesn't fire for API-created bookings. Fixed MarketplaceSyncService to write Appointment records directly after each successful booking. Backfilled three orphaned sessions. The old manual Cowork skill (GCal + state file + heroku run commands) is retired and replaced with a status-check-and-trigger-only skill.",
+      type:        "fix",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-09",
+      title:       "Drive Report Pipeline — Encoding Crash Fix + Renewal Hardening",
+      description: "The automated class report pipeline was silently crashing on every run — Google Drive's export API returns ASCII-8BIT binary, which blew up when concatenated with UTF-8 strings in the Claude API request builder. The job exited 'Complete' but dropped every file. Fixed by normalising encoding at the source. Also hardened watch channel renewal: register-before-stop, 48h expiry window, 6h cron (was daily). Andrew Chang's April 8 report recovered and emailed.",
+      type:        "fix",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-08",
+      title:       "Interview Prep Mode — Auto-detected Report Tab",
+      description: "The FluentRx class report pipeline now auto-detects interview prep sessions and produces a richer report. When the transcript contains interview keywords, the report gains a new 🎤 Interview Q&A tab — one card per question practiced, with the student's answer, what worked, coaching notes, and a polished model answer in their own voice. Goals section adds an [Interview] badge when the focus is technique rather than grammar. No new ENV vars.",
+      type:        "feature",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-08",
+      title:       "Marketplace Sync Pipeline Fix + Heroku Scheduler",
+      description: "AT and Preply bookings now sync into Cal.com automatically every morning. Fixed three compounding bugs: a pending DB migration, a missing Heroku Scheduler addon, and an HTTP 301 redirect that Ruby's Net::HTTP was silently swallowing — causing every run to fetch 0 events without raising an error. Daily Heroku Scheduler job configured: rake marketplace:sync at midnight UTC.",
+      type:        "fix",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-08",
+      title:       "Friday Fluency Fix · April 10 — Raise Your Register",
+      description: "This week's Friday Fix is built around raising written register — swapping casual connectors (but, so, also) for formal ones (however, consequently, furthermore). Includes the full email HTML, an interactive practice sheet with answer-key toggle, and deploy notes. First issue produced end-to-end via Fred's new session-launcher handoff system.",
+      type:        "feature",
+      tag:         "fluentrx"
+    },
     {
       date:        "2026-04-07",
       title:       "Marketplace Intake Skill — AT + Preply Student Onboarding",
@@ -703,6 +748,109 @@
       tag:         "fluentrx"
     },
   ];
+
+  const ROADMAP = [
+    {
+      phase: "1A",
+      title: "Report Rubric Data",
+      status: "active",
+      target: "Apr 2026",
+      description: "Extend session report JSON with 6 rubric dimensions. Add spider chart + next-session objectives to report HTML. Data accumulates silently — no change to student output yet.",
+      branch: "feature/report-rubric-data",
+      tag: "fluentrx"
+    },
+    {
+      phase: "1B",
+      title: "Split Dynamic Report into Partials",
+      status: "queued",
+      target: "Apr 2026",
+      description: "_dynamic_report.html.erb is 853 lines / 19k tokens — exceeds IDE agent read limit. Split into ~10 partials so agents can work on individual sections cleanly.",
+      branch: "feature/report-partials",
+      tag: "fluentrx"
+    },
+    {
+      phase: "2A",
+      title: "Worksheet Section Checkboxes",
+      status: "queued",
+      target: "May 2026",
+      description: "45 sections across pre/in/post-class. LLM generates full JSON in one call. Teacher toggles sections on/off. Display config stored separately — no re-generation needed.",
+      branch: "feature/worksheet-sections",
+      tag: "fluentrx"
+    },
+    {
+      phase: "2B",
+      title: "Student Profile Integration",
+      status: "queued",
+      target: "May 2026",
+      description: "JSON profile per student (job, industry, goals, weaknesses, vocab mastered). Injected into worksheet generation prompt for personalised scenarios and questions.",
+      branch: "feature/student-profiles",
+      tag: "fluentrx"
+    },
+    {
+      phase: "2C",
+      title: "Worksheet Level Differentiation",
+      status: "queued",
+      target: "May 2026",
+      description: "Scaffold toggle (B1/B2/C1). One worksheet generated, rendered with appropriate support layer. Parallel full versions as future premium feature.",
+      branch: "feature/worksheet-sections",
+      tag: "fluentrx"
+    },
+    {
+      phase: "3",
+      title: "Student Learning Graph",
+      status: "planned",
+      target: "Jun 2026",
+      description: "Three new DB tables: session_assessments, learned_vocabulary, student_progress_snapshots. Background job extracts rubric data + vocab from every session report.",
+      branch: "feature/learning-graph",
+      tag: "fluentrx"
+    },
+    {
+      phase: "4",
+      title: "Flashcards",
+      status: "planned",
+      target: "Jul 2026",
+      description: "Spaced repetition from learned_vocabulary. Cards carry context sentence from original session. Mobile-first web. Better than Anki because it's personalised to the student's own classes.",
+      branch: "feature/flashcards",
+      tag: "fluentrx"
+    },
+    {
+      phase: "5",
+      title: "Periodic Progress Review",
+      status: "planned",
+      target: "Aug 2026",
+      description: "Agent looks at last N sessions → structured progress report with spider chart trends + concrete transcript evidence. On-demand or scheduled. Premium add-on.",
+      branch: "feature/progress-review",
+      tag: "fluentrx"
+    },
+    {
+      phase: "6",
+      title: "Teacher Input Step in Reports",
+      status: "planned",
+      target: "Sep 2026",
+      description: "Teacher reviews AI draft → confirms/edits teacher-rated fields (pronunciation, engagement) → approves → report posts. New UI step before student notification.",
+      branch: "feature/teacher-review",
+      tag: "fluentrx"
+    },
+    {
+      phase: "7",
+      title: "Teacher Tools SaaS",
+      status: "vision",
+      target: "Post-May 2026",
+      description: "Worksheet generator (+ eventually full suite) sold to other ESL teachers. Entry price ~$15-29/mo. Built inside FluentRx Rails app — multi-tenant by teacher. Beat LinguaHouse on speed, customisation, price, personalisation.",
+      branch: null,
+      tag: "coder"
+    },
+    {
+      phase: "8",
+      title: "AI Teacher Assistant",
+      status: "vision",
+      target: "2026–2027",
+      description: "Agent with full access to student learning graph. Suggests session focus, flags plateaus, generates targeted exercises, supports async student practice. Amplifies the teacher — doesn't replace them.",
+      branch: null,
+      tag: "fluentrx"
+    }
+  ];
+
 </script>
 
 <!-- HEADER -->
@@ -776,6 +924,15 @@
       <div id="agent-sessions-content"></div>
     </div>
 
+  </div>
+
+  <!-- ROADMAP -->
+  <div class="panel" style="margin-top:0;">
+    <div class="section-header">
+      <div class="section-title">Product Roadmap</div>
+      <div class="section-badge">8 phases · AI teacher platform</div>
+    </div>
+    <div id="roadmap-content"></div>
   </div>
 
   <!-- BUILD LOG -->
@@ -1280,10 +1437,40 @@
     }).join('');
   }
 
+  function renderRoadmap() {
+    const el = document.getElementById('roadmap-content');
+    if (!el) return;
+    const STATUS_COLOR  = { active: '#0A5CFF', queued: '#F59E0B', planned: '#64748B', vision: '#8B5CF6' };
+    const STATUS_LABEL  = { active: 'ACTIVE', queued: 'QUEUED', planned: 'PLANNED', vision: 'VISION' };
+    el.innerHTML = ROADMAP.map(item => {
+      const sc = STATUS_COLOR[item.status] || '#64748B';
+      const sl = STATUS_LABEL[item.status] || item.status.toUpperCase();
+      const branchHtml = item.branch
+        ? `<span style="font-size:10px;font-family:'Space Mono',monospace;color:var(--text-muted);background:var(--surface2);padding:2px 8px;border-radius:3px;">${item.branch}</span>`
+        : '';
+      return `
+        <div style="padding:14px 0;border-bottom:1px solid var(--border);display:flex;gap:16px;align-items:flex-start;">
+          <div style="flex-shrink:0;width:48px;text-align:center;">
+            <div style="font-size:11px;font-weight:700;font-family:'Space Mono',monospace;color:${sc};background:${sc}22;padding:4px 6px;border-radius:5px;letter-spacing:0.05em;">P${item.phase}</div>
+          </div>
+          <div style="flex:1;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap;">
+              <span style="font-size:13px;font-weight:600;color:var(--text);">${item.title}</span>
+              <span style="font-size:9px;font-weight:700;letter-spacing:0.1em;color:${sc};background:${sc}22;padding:2px 7px;border-radius:3px;">${sl}</span>
+              <span style="font-size:9px;font-weight:600;color:var(--text-muted);">${item.target}</span>
+              ${branchHtml}
+            </div>
+            <div style="font-size:12px;color:var(--text-muted);line-height:1.6;">${item.description}</div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
   // ── Boot
   renderKPI();
   renderKanban();
   initCalendar();
+  renderRoadmap();
   renderBuildLog();
   renderSocialQueue();
   renderAgentSessions();
