@@ -633,15 +633,136 @@
     { date: '2026-04-10', persona: '@__teacherclint__', tag: 'teacher', draft: 'Quick question for advanced English learners:\n\nDo you know the punctuation rule for formal connectors?\n\n(Most people get this wrong even when they know the words.)\n\nAnswer in this week\'s free email: fluentrx.com/friday-fix/raise-your-register-connectors', status: 'draft' },
   ];
 
+  /* ── Friday Fix Work Log
+     Fred updates this each Friday Fix session.
+     status: 'done' | 'pending' | 'blocked'
+     type: 'decision' | 'task' | 'idea'
+  */
+  const FRIDAY_FIX_LOG = [
+    { date: '2026-04-15', type: 'decision', status: 'done',    text: 'Coupon standardised: FRIDAYFIX = 10% off. Retired FRIDAYFIX20. Reason: avoid coupon fatigue before 5-year anniversary promo.' },
+    { date: '2026-04-15', type: 'task',     status: 'done',    text: 'April 17 TBS card populated: TBS-119 · The Business of Prediction Markets (auto-fetched from Lesson Library sheet row 2).' },
+    { date: '2026-04-15', type: 'task',     status: 'pending', text: 'April 17 — deploy + send via Mail Meteor. Clint\'s action.' },
+    { date: '2026-04-15', type: 'idea',     status: 'pending', text: 'Rails endpoint for TBS episode data: GET /api/v1/friday_fix_episode — removes need for Chrome auth to read sheet.' },
+    { date: '2026-04-10', type: 'task',     status: 'done',    text: 'April 10 — sent via Mail Meteor. Variant A (platform cut).' },
+    { date: '2026-04-08', type: 'decision', status: 'done',    text: 'Format rules locked: .bq single-line corrections, text logo, TBS thumbnail unclickable, no academic terms.' },
+    { date: '2026-04-08', type: 'idea',     status: 'pending', text: 'FridayFix.gs — Apps Script sender to replace Mail Meteor. Tabled until April 17 is shipped.' },
+    { date: '2026-04-07', type: 'idea',     status: 'pending', text: 'Welcome email sequence (4 emails, Day 0/3/7/12). Draft in _context.md. Needs FRIDAYFIX coupon in app. High priority.' },
+  ];
+
   /* ── Build Log
      ⚠️  DO NOT EDIT MANUALLY.
      This array is synced from Mission-Control/build-log.md by Fred at session start.
      To add an entry: append to build-log.md with "Synced: ❌" — Fred handles the rest.
      Feeds build-in-public strategy for @__fluentrx__ / @__teacherclint__ / @__kryptoklint__.
-     Last synced: 2026-04-08
+     Last synced: 2026-04-15 (session 2)
      Fields: date, title, description, type (feature|automation|fix|infra), tag (persona)
   */
   const BUILD_LOG = [
+    {
+      date:        "2026-04-15",
+      title:       "Marketplace Sync: 12-Hour Booking Window",
+      description: "MarketplaceSyncService was booking AmazingTalker sessions up to 48 hours in advance, but AT allows free cancellations within 12 hours — creating phantom Cal.com bookings that had to be manually cleaned up. Narrowed the sync window to 12 hours so sessions are only booked once AT is fully committed to them. Heroku Scheduler also changed from daily to hourly to ensure all sessions are caught within the window.",
+      type:        "fix",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-15",
+      title:       "Student Snapshot + fred:snapshot Rake Task Verified",
+      description: "Fixed and ran the student package snapshot runner on Heroku production — 22 paying students captured with ACTIVE/LAPSED/NO_CREDITS/EXPIRING_SOON status for the Wednesday MailMeteor re-engagement campaign. Confirmed fred:snapshot rake task is live on Heroku (lib/tasks/fred.rake was already in main).",
+      type:        "infra",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-14",
+      title:       "Font Unification + Scroll Animation + Card Icons",
+      description: "Completed the typography overhaul by dropping Playfair Display entirely — all headings now use Inter at extrabold (800) and bold (700) weights with tight letter-spacing. Added scroll entrance animation to all 16 Talk Business workflow cards using IntersectionObserver with 80ms stagger. Each card heading now has a matching Font Awesome icon.",
+      type:        "feature",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-13",
+      title:       "Brand Voice + Visual Overhaul: Typography, Copy, Footer, Components",
+      description: "Full outward-facing site overhaul across copy and design. Added Playfair Display serif font to all headings. Fixed responsive font scale — large sizes now fire at xl: (1280px+). Built new shared/_steps_flow.html.erb component. Rewrote copy on homepage, about, pricing, welcome, and client results pages. Redesigned footer with brand tagline, two clean nav columns, and 2026 copyright. Refactored Talk Business raw card HTML to use the universal base_card component.",
+      type:        "feature",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-13",
+      title:       "Heroku Deploy Fix + B06 Backfill: v428 Live",
+      description: "Resolved Heroku push rejection caused by a rogue @esbuild/linux-arm64 devDependency. Removed the bad dep, regenerated yarn.lock, pushed clean as v427. A follow-up fix for a LearnedVocabulary key mismatch deployed as v428. All 6 migrations ran clean including the 3 learning graph tables. Backfill processed 21 session reports: 21 session assessments and 127 learned vocabulary entries now in the DB.",
+      type:        "infra",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-13",
+      title:       "Course Page Polish: Workplace Situations + Interview Prep",
+      description: "Rebuilt the Workplace Situations and Interview Prep course pages from stub placeholders to full-depth marketing pages matching Talk Business. Each page has a hero section, 4 feature cards, a tabbed workflow timeline (Pre-Session / In-Session / Post-Session) with accent steps, and a pricing footer. Built using existing components with zero new CSS or JavaScript.",
+      type:        "feature",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-13",
+      title:       "Worksheet HTML Renderer: 16:9 Card Deck + Student Share Link",
+      description: "Rebuilt the FluentRx worksheet show view from scratch. Each enabled section displays as a 16:9 card in a scroll-snap deck — one card per section, projector-ready. Teachers get a collapsible section picker with a 'Copy student link' button. Students access worksheets via /w/:token URL with mark-complete checkboxes per card. Share token auto-generated on worksheet creation; existing worksheets backfilled.",
+      type:        "feature",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-14",
+      title:       "Nick Onboarded to FluentRx + AT Sync Confirmed",
+      description: "Onboarded new AmazingTalker student Nick (doter1458@gmail.com) into FluentRx. Created user (ID: 373) and order (ID: 435) — 10x50-min sessions, purchased Apr 10, expires Jul 10 2026. Added Nick to KNOWN_STUDENTS in MarketplaceSyncService. Confirmed Heroku Scheduler is running rake marketplace:sync daily at midnight UTC. Fixed two bugs: backfill scripts must use Rails.root.join() for heroku runner, and User.new + save(validate: false) instead of find_or_create_by! to bypass Devise password validation.",
+      type:        "ops",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-13",
+      title:       "BCC Semester 1 Course Plan: Statistics 1 Week-by-Week Scope",
+      description: "Built a full Semester 1 course plan for M6 Additional Mathematics at Bangkok Christian College, covering all 7 chapters of Pearson Statistics 1 across 19 weeks (May 11 – Sept 18). Plan includes chapter-by-chapter learning objectives, suggested activities, holiday impact notes, assignment schedule, midterm/unit quiz timing, and differentiation notes for Track 2 (614).",
+      type:        "feature",
+      tag:         "teacher"
+    },
+    {
+      date:        "2026-04-13",
+      title:       "Student Learning Graph: Relational Tables for Scores + Vocabulary",
+      description: "Lifted rubric scores and vocabulary items out of JSON blobs in session reports and into three proper relational tables: session_assessments (one row per report with 6 dimension scores), learned_vocabulary (one row per student/word pair), and student_progress_snapshots (weekly aggregates). A background job now auto-populates all three after every session report is saved. Foundational data layer for flashcards and progress charts.",
+      type:        "infra",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-12",
+      title:       "Marketing Overhaul: 3 Courses, Clean Brand Voice",
+      description: "Collapsed FluentRx from 4 course tracks to 3: Talk Business, Workplace Situations, and Interview Prep. Dropped Exam Prep, Future Leaders, and Educators entirely — old URLs redirect to home. Two new course pages created. Homepage hero now has a single CTA pointing to /start. Brand voice cleaned throughout — no mission statements, no IELTS/TOEFL references anywhere in active views.",
+      type:        "feature",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-12",
+      title:       "Fred Snapshot Rake Task",
+      description: "Added a fred:snapshot rake task that generates a structured markdown report of student package status — expiring packages, low credits, lapsed students, unconverted trials, and active students — in a single Heroku command. Fred (Cowork) can now pipe output directly to _db-snapshot.md for daily upsell targeting without opening the Rails console.",
+      type:        "automation",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-11",
+      title:       "Session Report Rubric Assessment & Spider Chart — Merged + Deployed",
+      description: "Session reports now capture structured assessment data across 6 rubric dimensions (task completion, grammar, vocabulary, fluency, engagement, pronunciation) with 0-10 scores. A new Assessment tab renders a radar/spider chart using Chart.js alongside dimension detail cards. The Overview tab now shows previous-session objective outcomes and next-session focus objectives. Merged feature/report-rubric-data → main and deployed to Heroku.",
+      type:        "feature",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-09",
+      title:       "Session Report Rubric Assessment & Spider Chart",
+      description: "Session reports now capture structured assessment data across 6 rubric dimensions (task completion, grammar, vocabulary, fluency, engagement, pronunciation) with 0-10 scores. A new Assessment tab renders a radar/spider chart using Chart.js alongside dimension detail cards. The Overview tab now shows previous-session objective outcomes and next-session focus objectives. On feature branch — pending test transcript validation before merge.",
+      type:        "feature",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-09",
+      title:       "Report Pipeline Sync: Single Prompt Source + IDE Agent Parity",
+      description: "The class report generator now has a single source of truth for its LLM prompt. The IDE agent workflow (Gemini + to-be-processed folder) and the automated Drive pipeline both read from the same file via a symlink — no manual sync required. The IDE agent also gained two capabilities it was previously missing: automatic injection of prior session goals for continuity, and interview-session detection that appends the interview supplement prompt automatically.",
+      type:        "infra",
+      tag:         "fluentrx"
+    },
     {
       date:        "2026-04-09",
       title:       "Practice Tab Fix + Claude API Timeout Increase",
@@ -933,6 +1054,15 @@
       <div class="section-badge">8 phases · AI teacher platform</div>
     </div>
     <div id="roadmap-content"></div>
+  </div>
+
+  <!-- FRIDAY FIX WORK LOG -->
+  <div class="panel" style="margin-top:0;">
+    <div class="section-header">
+      <div class="section-title">Friday Fix — Work Log</div>
+      <div class="section-badge">decisions · tasks · ideas</div>
+    </div>
+    <div id="friday-fix-log-content"></div>
   </div>
 
   <!-- BUILD LOG -->
@@ -1397,6 +1527,29 @@
     content.innerHTML = html;
   }
 
+  // ── Friday Fix Work Log
+  function renderFridayFixLog() {
+    const el = document.getElementById('friday-fix-log-content');
+    if (!el) return;
+    const STATUS_COLOR = { done: '#10B981', pending: '#F59E0B', blocked: '#F43F5E' };
+    const TYPE_COLOR   = { decision: '#A78BFA', task: '#00D4FF', idea: '#F59E0B' };
+    el.innerHTML = FRIDAY_FIX_LOG.map(entry => {
+      const sc = STATUS_COLOR[entry.status] || '#64748B';
+      const tc = TYPE_COLOR[entry.type] || '#64748B';
+      return `
+        <div style="padding:12px 0;border-bottom:1px solid var(--border);display:flex;gap:16px;align-items:flex-start;">
+          <div style="flex-shrink:0;width:80px;font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace;padding-top:3px;">${entry.date}</div>
+          <div style="flex:1;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap;">
+              <span style="font-size:9px;font-weight:700;letter-spacing:0.1em;color:${tc};background:${tc}22;padding:2px 7px;border-radius:3px;">${entry.type.toUpperCase()}</span>
+              <span style="font-size:9px;font-weight:700;letter-spacing:0.1em;color:${sc};background:${sc}22;padding:2px 7px;border-radius:3px;">${entry.status.toUpperCase()}</span>
+            </div>
+            <div style="font-size:12px;color:var(--text);line-height:1.6;">${entry.text}</div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
   // ── Build Log
   const TYPE_COLORS = {
     automation: '#00D4FF',
@@ -1471,6 +1624,7 @@
   renderKanban();
   initCalendar();
   renderRoadmap();
+  renderFridayFixLog();
   renderBuildLog();
   renderSocialQueue();
   renderAgentSessions();
