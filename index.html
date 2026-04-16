@@ -531,9 +531,9 @@
 
   /* ── Stripe (Fred updates via API) */
   const STRIPE_DATA = {
-    mtd_revenue:  437,
+    mtd_revenue:  516,
     last_month:   950,
-    last_updated: "2026-04-05"
+    last_updated: "2026-04-16"
   };
 
   /* ── Manual income (Clint updates) */
@@ -554,7 +554,7 @@
   /* ── April revenue goal (recoup Claude Max) */
   const GOAL = {
     target:   250,
-    current:  0,
+    current:  516,
     deadline: "2026-04-30"
   };
 
@@ -565,8 +565,6 @@
   const TODOS = {
     must: [
       { id: 'newton-rejection', text: "Send Newton rejection — draft ready, to: brian.d@newton.ac.th, CC: joshua.e@newton.ac.th", tag: "teacher" },
-      { id: 'bcc-contract',     text: "Chase BCC contract — signing April 10, 10am, BCC Silom. Contract not received.", tag: "teacher" },
-      { id: 'nancy-lin',        text: "Nancy Lin — replied Apr 8. Offered weeknights 18–24 TW time + Sat 09–15 late April. Awaiting slot confirmation.", tag: "fluentrx" },
       { id: 'welcome-seq',      text: "Deploy welcome email sequence — 4 emails drafted, 3 checks before going live", tag: "fluentrx" },
     ],
     should: [
@@ -627,10 +625,10 @@
      status: 'draft' | 'posted'
   */
   const SOCIAL_QUEUE = [
-    { date: '2026-04-10', persona: '@__fluentrx__', tag: 'fluentrx', draft: 'Swapping "but" for "however" is the same word, same meaning.\n\nBut one belongs in a business email and the other belongs in a text message.\n\nThis week\'s Friday Fix: the 4 connector swaps that instantly raise your register.\n\nFree: fluentrx.com/friday-fix/raise-your-register-connectors', status: 'draft' },
-    { date: '2026-04-10', persona: '@__fluentrx__', tag: 'fluentrx', draft: 'Know when to use "consequently" vs "therefore"?\n\nMost advanced learners don\'t. (It\'s not obvious.)\n\nFree practice sheet this week — 3 exercises, answer key included.\n\nfluentrx.com/practice/raise-your-register-connectors', status: 'draft' },
-    { date: '2026-04-10', persona: '@__teacherclint__', tag: 'teacher', draft: 'One thing I notice in almost every advanced student\'s writing:\n\nThey use "but" and "so" where a native speaker would use "however" and "consequently."\n\nIt\'s not wrong. It just sounds casual. And sometimes that matters a lot.\n\nNew Friday Fix on this 👇\nfluentrx.com/friday-fix/raise-your-register-connectors', status: 'draft' },
-    { date: '2026-04-10', persona: '@__teacherclint__', tag: 'teacher', draft: 'Quick question for advanced English learners:\n\nDo you know the punctuation rule for formal connectors?\n\n(Most people get this wrong even when they know the words.)\n\nAnswer in this week\'s free email: fluentrx.com/friday-fix/raise-your-register-connectors', status: 'draft' },
+    { date: '2026-04-10', persona: '@__fluentrx__', tag: 'fluentrx', draft: 'Swapping "but" for "however" is the same word, same meaning.\n\nBut one belongs in a business email and the other belongs in a text message.\n\nThis week\'s Friday Fix: the 4 connector swaps that instantly raise your register.\n\nFree: fluentrx.com/friday-fix/raise-your-register-connectors', status: 'posted' },
+    { date: '2026-04-10', persona: '@__fluentrx__', tag: 'fluentrx', draft: 'Know when to use "consequently" vs "therefore"?\n\nMost advanced learners don\'t. (It\'s not obvious.)\n\nFree practice sheet this week — 3 exercises, answer key included.\n\nfluentrx.com/practice/raise-your-register-connectors', status: 'posted' },
+    { date: '2026-04-10', persona: '@__teacherclint__', tag: 'teacher', draft: 'One thing I notice in almost every advanced student\'s writing:\n\nThey use "but" and "so" where a native speaker would use "however" and "consequently."\n\nIt\'s not wrong. It just sounds casual. And sometimes that matters a lot.\n\nNew Friday Fix on this 👇\nfluentrx.com/friday-fix/raise-your-register-connectors', status: 'posted' },
+    { date: '2026-04-10', persona: '@__teacherclint__', tag: 'teacher', draft: 'Quick question for advanced English learners:\n\nDo you know the punctuation rule for formal connectors?\n\n(Most people get this wrong even when they know the words.)\n\nAnswer in this week\'s free email: fluentrx.com/friday-fix/raise-your-register-connectors', status: 'posted' },
   ];
 
   /* ── Friday Fix Work Log
@@ -874,9 +872,9 @@
     {
       phase: "1A",
       title: "Report Rubric Data",
-      status: "active",
+      status: "done",
       target: "Apr 2026",
-      description: "Extend session report JSON with 6 rubric dimensions. Add spider chart + next-session objectives to report HTML. Data accumulates silently — no change to student output yet.",
+      description: "Extend session report JSON with 6 rubric dimensions. Add spider chart + next-session objectives to report HTML. Data accumulates silently — no change to student output yet. Merged + deployed Apr 11.",
       branch: "feature/report-rubric-data",
       tag: "fluentrx"
     },
@@ -1556,12 +1554,14 @@
     feature:    '#A78BFA',
     infra:      '#F59E0B',
     fix:        '#F43F5E',
+    ops:        '#10B981',
   };
   const TYPE_LABELS = {
     automation: 'AUTOMATION',
     feature:    'FEATURE',
     infra:      'INFRA',
     fix:        'FIX',
+    ops:        'OPS',
   };
 
   function renderBuildLog() {
@@ -1593,8 +1593,8 @@
   function renderRoadmap() {
     const el = document.getElementById('roadmap-content');
     if (!el) return;
-    const STATUS_COLOR  = { active: '#0A5CFF', queued: '#F59E0B', planned: '#64748B', vision: '#8B5CF6' };
-    const STATUS_LABEL  = { active: 'ACTIVE', queued: 'QUEUED', planned: 'PLANNED', vision: 'VISION' };
+    const STATUS_COLOR  = { active: '#0A5CFF', done: '#10B981', queued: '#F59E0B', planned: '#64748B', vision: '#8B5CF6' };
+    const STATUS_LABEL  = { active: 'ACTIVE', done: 'DONE', queued: 'QUEUED', planned: 'PLANNED', vision: 'VISION' };
     el.innerHTML = ROADMAP.map(item => {
       const sc = STATUS_COLOR[item.status] || '#64748B';
       const sl = STATUS_LABEL[item.status] || item.status.toUpperCase();
