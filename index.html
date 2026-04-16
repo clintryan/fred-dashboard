@@ -531,9 +531,9 @@
 
   /* ── Stripe (Fred updates via API) */
   const STRIPE_DATA = {
-    mtd_revenue:  516,
+    mtd_revenue:  437,
     last_month:   950,
-    last_updated: "2026-04-16"
+    last_updated: "2026-04-05"
   };
 
   /* ── Manual income (Clint updates) */
@@ -554,7 +554,7 @@
   /* ── April revenue goal (recoup Claude Max) */
   const GOAL = {
     target:   250,
-    current:  516,
+    current:  0,
     deadline: "2026-04-30"
   };
 
@@ -565,6 +565,8 @@
   const TODOS = {
     must: [
       { id: 'newton-rejection', text: "Send Newton rejection — draft ready, to: brian.d@newton.ac.th, CC: joshua.e@newton.ac.th", tag: "teacher" },
+      { id: 'bcc-contract',     text: "Chase BCC contract — signing April 10, 10am, BCC Silom. Contract not received.", tag: "teacher" },
+      { id: 'nancy-lin',        text: "Nancy Lin — replied Apr 8. Offered weeknights 18–24 TW time + Sat 09–15 late April. Awaiting slot confirmation.", tag: "fluentrx" },
       { id: 'welcome-seq',      text: "Deploy welcome email sequence — 4 emails drafted, 3 checks before going live", tag: "fluentrx" },
     ],
     should: [
@@ -625,10 +627,10 @@
      status: 'draft' | 'posted'
   */
   const SOCIAL_QUEUE = [
-    { date: '2026-04-10', persona: '@__fluentrx__', tag: 'fluentrx', draft: 'Swapping "but" for "however" is the same word, same meaning.\n\nBut one belongs in a business email and the other belongs in a text message.\n\nThis week\'s Friday Fix: the 4 connector swaps that instantly raise your register.\n\nFree: fluentrx.com/friday-fix/raise-your-register-connectors', status: 'posted' },
-    { date: '2026-04-10', persona: '@__fluentrx__', tag: 'fluentrx', draft: 'Know when to use "consequently" vs "therefore"?\n\nMost advanced learners don\'t. (It\'s not obvious.)\n\nFree practice sheet this week — 3 exercises, answer key included.\n\nfluentrx.com/practice/raise-your-register-connectors', status: 'posted' },
-    { date: '2026-04-10', persona: '@__teacherclint__', tag: 'teacher', draft: 'One thing I notice in almost every advanced student\'s writing:\n\nThey use "but" and "so" where a native speaker would use "however" and "consequently."\n\nIt\'s not wrong. It just sounds casual. And sometimes that matters a lot.\n\nNew Friday Fix on this 👇\nfluentrx.com/friday-fix/raise-your-register-connectors', status: 'posted' },
-    { date: '2026-04-10', persona: '@__teacherclint__', tag: 'teacher', draft: 'Quick question for advanced English learners:\n\nDo you know the punctuation rule for formal connectors?\n\n(Most people get this wrong even when they know the words.)\n\nAnswer in this week\'s free email: fluentrx.com/friday-fix/raise-your-register-connectors', status: 'posted' },
+    { date: '2026-04-10', persona: '@__fluentrx__', tag: 'fluentrx', draft: 'Swapping "but" for "however" is the same word, same meaning.\n\nBut one belongs in a business email and the other belongs in a text message.\n\nThis week\'s Friday Fix: the 4 connector swaps that instantly raise your register.\n\nFree: fluentrx.com/friday-fix/raise-your-register-connectors', status: 'draft' },
+    { date: '2026-04-10', persona: '@__fluentrx__', tag: 'fluentrx', draft: 'Know when to use "consequently" vs "therefore"?\n\nMost advanced learners don\'t. (It\'s not obvious.)\n\nFree practice sheet this week — 3 exercises, answer key included.\n\nfluentrx.com/practice/raise-your-register-connectors', status: 'draft' },
+    { date: '2026-04-10', persona: '@__teacherclint__', tag: 'teacher', draft: 'One thing I notice in almost every advanced student\'s writing:\n\nThey use "but" and "so" where a native speaker would use "however" and "consequently."\n\nIt\'s not wrong. It just sounds casual. And sometimes that matters a lot.\n\nNew Friday Fix on this 👇\nfluentrx.com/friday-fix/raise-your-register-connectors', status: 'draft' },
+    { date: '2026-04-10', persona: '@__teacherclint__', tag: 'teacher', draft: 'Quick question for advanced English learners:\n\nDo you know the punctuation rule for formal connectors?\n\n(Most people get this wrong even when they know the words.)\n\nAnswer in this week\'s free email: fluentrx.com/friday-fix/raise-your-register-connectors', status: 'draft' },
   ];
 
   /* ── Friday Fix Work Log
@@ -652,10 +654,52 @@
      This array is synced from Mission-Control/build-log.md by Fred at session start.
      To add an entry: append to build-log.md with "Synced: ❌" — Fred handles the rest.
      Feeds build-in-public strategy for @__fluentrx__ / @__teacherclint__ / @__kryptoklint__.
-     Last synced: 2026-04-15 (session 2)
+     Last synced: 2026-04-16
      Fields: date, title, description, type (feature|automation|fix|infra), tag (persona)
   */
   const BUILD_LOG = [
+    {
+      date:        "2026-04-16",
+      title:       "Session Duration-Based Income Calculation",
+      description: "Added duration-aware income calculation to the Appointment model. 25-min sessions calculate at 60% of the base rate, 50-min at 100%, and 80/90-min at 150%. Also added Appointment.monthly_income for the dashboard auto-refresh. No migration needed — duration derived from existing timestamps. Verified in Rails console with correct results ($15, $25, $37.50). Deployed as v445.",
+      type:        "feature",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-16",
+      title:       "Sprint Methodology + 3 IDE Agent Handoffs",
+      description: "Established the 14-day sprint methodology for the Max→Pro token window. Agreed workflow: Fred (Cowork) writes handoff files, IDE agent runs with --dangerously-skip-permissions, REVIEW.md contains explicit test + deploy instructions, Clint merges and does one daily Heroku push. Three handoffs written and queued: (1) FluentRx session pricing for 25-min/90-min durations, (2) Dashboard auto-refresh via GitHub Actions pulling Stripe MTD + Heroku income, (3) Dashboard full rebuild in React + Vite + ShadCN/UI.",
+      type:        "infra",
+      tag:         "coder"
+    },
+    {
+      date:        "2026-04-16",
+      title:       "CoderClint Gmail Mailer: OAuth + send-email.py",
+      description: "Wired up a full Gmail API email system for CoderClint. Authenticated cryptoklint@gmail.com via OAuth (Desktop app flow, Google Cloud Console). Built send-email.py — hardcoded allowlist of four project addresses, In-Reply-To threading so follow-up sends reply into the same Gmail thread, thread state persisted in email-threads.json keyed by project name. Sender displays as 'Fred'. All four project inboxes confirmed receiving.",
+      type:        "infra",
+      tag:         "coder"
+    },
+    {
+      date:        "2026-04-15",
+      title:       "Deploy Gate Rules + Bridge Protocol Hardening",
+      description: "After a production incident (curly quote 500 on homepage), hardened the multi-agent deployment workflow. IDE agents are now prohibited from any git push or heroku command. All fluent-rx deploys go through a mandatory deploy gate: agent writes exact localhost verification URL + 4 deploy commands to .fred/status.md, Fred surfaces it to Clint, Clint verifies and runs the commands himself.",
+      type:        "infra",
+      tag:         "fred"
+    },
+    {
+      date:        "2026-04-15",
+      title:       "Late Cancel Bug Fix",
+      description: "Fixed a bug where a cancellation made 22+ hours before a session was incorrectly recorded as a late cancel. Root cause: the cancel action delegated all DB updates to the Cal.com webhook, which could arrive after the 12-hour late-cancel threshold if Cal.com retried a delayed delivery. Fix: appointment status and credit refund now happen inline immediately after Cal.com confirms the cancellation. The webhook becomes a no-op for already-cancelled records.",
+      type:        "fix",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-15",
+      title:       "Homepage Visual Polish",
+      description: "Tightened the homepage spacing and sharpened the type hierarchy across the brand-design-overhaul branch. Hero padding cut by 37%, all section padding reduced by ~33%, eyebrow labels now read as intentional small-caps, headings bumped to extrabold, section backgrounds made visibly distinct, and body copy uses the design system color instead of hardcoded gray.",
+      type:        "feature",
+      tag:         "fluentrx"
+    },
     {
       date:        "2026-04-15",
       title:       "Marketplace Sync: 12-Hour Booking Window",
@@ -872,9 +916,9 @@
     {
       phase: "1A",
       title: "Report Rubric Data",
-      status: "done",
+      status: "active",
       target: "Apr 2026",
-      description: "Extend session report JSON with 6 rubric dimensions. Add spider chart + next-session objectives to report HTML. Data accumulates silently — no change to student output yet. Merged + deployed Apr 11.",
+      description: "Extend session report JSON with 6 rubric dimensions. Add spider chart + next-session objectives to report HTML. Data accumulates silently — no change to student output yet.",
       branch: "feature/report-rubric-data",
       tag: "fluentrx"
     },
@@ -1554,14 +1598,12 @@
     feature:    '#A78BFA',
     infra:      '#F59E0B',
     fix:        '#F43F5E',
-    ops:        '#10B981',
   };
   const TYPE_LABELS = {
     automation: 'AUTOMATION',
     feature:    'FEATURE',
     infra:      'INFRA',
     fix:        'FIX',
-    ops:        'OPS',
   };
 
   function renderBuildLog() {
@@ -1593,8 +1635,8 @@
   function renderRoadmap() {
     const el = document.getElementById('roadmap-content');
     if (!el) return;
-    const STATUS_COLOR  = { active: '#0A5CFF', done: '#10B981', queued: '#F59E0B', planned: '#64748B', vision: '#8B5CF6' };
-    const STATUS_LABEL  = { active: 'ACTIVE', done: 'DONE', queued: 'QUEUED', planned: 'PLANNED', vision: 'VISION' };
+    const STATUS_COLOR  = { active: '#0A5CFF', queued: '#F59E0B', planned: '#64748B', vision: '#8B5CF6' };
+    const STATUS_LABEL  = { active: 'ACTIVE', queued: 'QUEUED', planned: 'PLANNED', vision: 'VISION' };
     el.innerHTML = ROADMAP.map(item => {
       const sc = STATUS_COLOR[item.status] || '#64748B';
       const sl = STATUS_LABEL[item.status] || item.status.toUpperCase();
