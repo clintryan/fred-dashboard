@@ -1,0 +1,37 @@
+name: Refresh Dashboard Data
+
+on:
+  schedule:
+    - cron: '0 2 * * *'  # 02:00 UTC daily (09:00 Bangkok)
+  workflow_dispatch:       # Manual trigger from Actions UI
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install psycopg2-binary
+
+      - name: Refresh dashboard data
+        env:
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          HEROKU_API_KEY:    ${{ secrets.HEROKU_API_KEY }}
+          DATABASE_URL:      ${{ secrets.DATABASE_URL }}
+        run: python scripts/refresh_data.py
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "Fred Bot"
+          git config user.email "cryptoklint@gmail.com"
+          git add index.html
+          git diff --staged --quiet || git commit -m "Auto-refresh: $(date +%Y-%m-%d)"
+          git push
