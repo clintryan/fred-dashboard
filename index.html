@@ -659,6 +659,13 @@
   */
   const BUILD_LOG = [
     {
+      date:        "2026-04-21",
+      title:       "Command Workspace Restructure",
+      description: "Full agent harness restructure. Phantom fred/.git deleted — fred workspace now managed by the outer ~/command/ git repo, eliminating nested-repo lock contention. Fred user granted full ~/command/ filesystem access via ACL; isolation moved to account level where it belongs. .env and tools/ consolidated to single canonical locations. Worksheet-generator installed as canonical skill (old slash command retired). Four repos separated (fred-dashboard, teacher-slides, teacher-comments) and teacher-dashboard deduplicated. fred-memory.md refreshed after 20 days stale. 14/15 tasks completed.",
+      type:        "infra",
+      tag:         "fred"
+    },
+    {
       date:        "2026-04-20",
       title:       "zshrc oh-my-zsh Fix",
       description: "Fixed a zsh parse error preventing oh-my-zsh from loading. Root cause: a dead git() function in ~/.zshrc was being re-defined on re-source after alias git=... had already set git as an alias. Removed the dead function, added unalias git guard. oh-my-zsh now loads cleanly with robbyrussell theme showing git branch in prompt.",
