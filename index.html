@@ -1,0 +1,1697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FRED — Command Center</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <!-- Google Identity Services (for Calendar OAuth2) -->
+  <script src="https://accounts.google.com/gsi/client" async></script>
+  <style>
+    /* ═══════════════════════════════════════════
+       FRED Dashboard v2 — Dark Command Center
+       Navy-black + electric cyan + persona accents
+       April 2026
+    ═══════════════════════════════════════════ */
+
+    :root {
+      --bg:          #0B0F1A;
+      --surface:     #131929;
+      --surface2:    #1A2238;
+      --border:      #1E2D45;
+      --border2:     #263350;
+      --text:        #E2E8F0;
+      --text-muted:  #64748B;
+      --accent:      #00D4FF;
+      --accent-dim:  rgba(0, 212, 255, 0.12);
+      --up:          #10B981;
+      --down:        #F43F5E;
+      --warn:        #F59E0B;
+      --purple:      #A78BFA;
+      /* persona accents */
+      --c-fluentrx:  #00D4FF;
+      --c-coder:     #A78BFA;
+      --c-teacher:   #10B981;
+      --c-trader:    #F59E0B;
+      --c-fred:      #64748B;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    /* ── Header ─────────────────────────────── */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 28px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .logo {
+      font-family: 'Space Mono', monospace;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.06em;
+    }
+    .logo-sub {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-top: 2px;
+    }
+    .header-meta {
+      text-align: right;
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: 'Space Mono', monospace;
+    }
+    .header-date {
+      font-size: 13px;
+      color: var(--text);
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    /* ── Persona Tab Nav ─────────────────────── */
+    .tab-nav {
+      display: flex;
+      align-items: stretch;
+      padding: 0 28px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      gap: 2px;
+      overflow-x: auto;
+    }
+    .tab-btn {
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--text-muted);
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      padding: 13px 18px;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+      white-space: nowrap;
+      margin-bottom: -1px;
+      flex-shrink: 0;
+    }
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active[data-persona="all"]       { color: var(--accent);     border-bottom-color: var(--accent);     }
+    .tab-btn.active[data-persona="fluentrx"]  { color: var(--c-fluentrx); border-bottom-color: var(--c-fluentrx); }
+    .tab-btn.active[data-persona="coder"]     { color: var(--c-coder);    border-bottom-color: var(--c-coder);    }
+    .tab-btn.active[data-persona="teacher"]   { color: var(--c-teacher);  border-bottom-color: var(--c-teacher);  }
+    .tab-btn.active[data-persona="trader"]    { color: var(--c-trader);   border-bottom-color: var(--c-trader);   }
+
+    /* ── Main Layout ─────────────────────────── */
+    .main { padding: 20px 28px; max-width: 1700px; margin: 0 auto; }
+
+    /* ── KPI Cards ───────────────────────────── */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-bottom: 20px;
+      min-height: 110px;
+    }
+    .kpi-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: var(--accent);
+      opacity: 0.5;
+    }
+    .kpi-card.warn::before { background: var(--warn); }
+    .kpi-card.green::before { background: var(--up); }
+    .kpi-label {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+    .kpi-value {
+      font-family: 'Space Mono', monospace;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    .kpi-delta { font-size: 11px; font-family: 'Space Mono', monospace; }
+    .kpi-delta.up   { color: var(--up); }
+    .kpi-delta.down { color: var(--down); }
+    .kpi-sub { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+    .goal-bar-track {
+      height: 4px; background: var(--border2); border-radius: 2px;
+      overflow: hidden; margin-top: 8px;
+    }
+    .goal-bar-fill {
+      height: 100%; background: var(--accent); border-radius: 2px;
+      transition: width 0.6s ease;
+    }
+    .goal-bar-fill.warn   { background: var(--warn); }
+    .goal-bar-fill.danger { background: var(--down); }
+    .goal-bar-pct { font-size: 10px; color: var(--text-muted); margin-top: 5px; font-family: 'Space Mono', monospace; }
+
+    /* ── Body Grid ───────────────────────────── */
+    .body-grid {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 18px;
+    }
+
+    /* ── Panel ───────────────────────────────── */
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px;
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .section-title {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--accent);
+    }
+    .section-badge {
+      font-size: 10px;
+      color: var(--text-muted);
+      font-family: 'Space Mono', monospace;
+    }
+
+    /* ── Kanban ──────────────────────────────── */
+    .kanban-board {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      align-items: start;
+    }
+    .kanban-col-header {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      padding-bottom: 8px;
+      border-bottom: 2px solid;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .kanban-col-header.must   { color: var(--accent);  border-color: var(--accent);  }
+    .kanban-col-header.should { color: var(--warn);    border-color: var(--warn);    }
+    .kanban-col-header.could  { color: var(--purple);  border-color: var(--purple);  }
+    .col-count {
+      font-size: 9px;
+      opacity: 0.6;
+    }
+    .kanban-card {
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      padding: 11px 13px;
+      margin-bottom: 8px;
+      display: flex;
+      gap: 9px;
+      align-items: flex-start;
+      cursor: pointer;
+      transition: border-color 0.15s, opacity 0.2s;
+      user-select: none;
+    }
+    .kanban-card:hover { border-color: var(--border2); filter: brightness(1.05); }
+    .kanban-card.done { opacity: 0.35; }
+    .kanban-card input[type="checkbox"] {
+      accent-color: var(--accent);
+      flex-shrink: 0;
+      margin-top: 3px;
+      cursor: pointer;
+      width: 13px; height: 13px;
+    }
+    .kanban-card-body { flex: 1; }
+    .kanban-card-text {
+      font-size: 12px;
+      color: var(--text);
+      line-height: 1.45;
+    }
+    .kanban-card.done .kanban-card-text {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+    .kanban-tag {
+      display: inline-block;
+      font-size: 9px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 1px 6px;
+      border-radius: 3px;
+      margin-top: 5px;
+    }
+    .tag-fluentrx { background: rgba(0,212,255,0.1);   color: var(--c-fluentrx); }
+    .tag-coder    { background: rgba(167,139,250,0.1);  color: var(--c-coder);    }
+    .tag-teacher  { background: rgba(16,185,129,0.1);   color: var(--c-teacher);  }
+    .tag-trader   { background: rgba(245,158,11,0.1);   color: var(--c-trader);   }
+    .tag-fred     { background: rgba(100,116,139,0.1);  color: var(--c-fred);     }
+    .kanban-empty {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-style: italic;
+      padding: 8px 0;
+    }
+
+    /* ── Agent Badge ────────────────────────── */
+    .agent-badge {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 6px;
+      font-size: 10px;
+      font-family: 'Space Mono', monospace;
+      color: var(--text-muted);
+    }
+    .agent-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .agent-dot.active  { background: var(--up);   box-shadow: 0 0 4px var(--up); }
+    .agent-dot.done    { background: var(--text-muted); }
+    .agent-dot.blocked { background: var(--down); }
+    .agent-label { color: var(--text-muted); }
+    .agent-label.active  { color: var(--up); }
+    .agent-label.blocked { color: var(--down); }
+
+    /* ── Social Queue Panel ──────────────────── */
+    .social-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-top: 18px;
+    }
+    @media (max-width: 900px) { .social-row { grid-template-columns: 1fr; } }
+    .social-card {
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+    }
+    .social-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .social-persona {
+      font-size: 10px;
+      font-weight: 700;
+      font-family: 'Space Mono', monospace;
+      color: var(--accent);
+    }
+    .social-date {
+      font-size: 10px;
+      color: var(--text-muted);
+      font-family: 'Space Mono', monospace;
+    }
+    .social-draft {
+      font-size: 12px;
+      color: var(--text);
+      line-height: 1.55;
+      border-left: 2px solid var(--border2);
+      padding-left: 10px;
+      margin-bottom: 8px;
+      font-style: italic;
+    }
+    .social-status-badge {
+      display: inline-block;
+      font-size: 9px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 2px 7px;
+      border-radius: 3px;
+    }
+    .social-status-badge.draft  { background: rgba(245,158,11,0.15); color: var(--warn); }
+    .social-status-badge.posted { background: rgba(16,185,129,0.15); color: var(--up); }
+    .social-empty {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-style: italic;
+      padding: 8px 0;
+    }
+
+    /* ── Calendar Panel ──────────────────────── */
+    .cal-auth-btn {
+      background: var(--accent-dim);
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      border-radius: 5px;
+      padding: 5px 12px;
+      font-size: 10px;
+      font-family: 'Space Mono', monospace;
+      cursor: pointer;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+    .cal-auth-btn:hover { background: rgba(0, 212, 255, 0.2); }
+    .cal-auth-btn.connected { color: var(--up); border-color: var(--up); background: rgba(16,185,129,0.1); }
+
+    .cal-setup-box {
+      padding: 16px;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+    .cal-setup-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+    .cal-setup-steps {
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.7;
+      counter-reset: step;
+    }
+    .cal-setup-steps li {
+      counter-increment: step;
+      list-style: none;
+      padding-left: 4px;
+    }
+    .cal-setup-steps li::before {
+      content: counter(step) ". ";
+      color: var(--accent);
+      font-family: 'Space Mono', monospace;
+    }
+    .cal-setup-steps code {
+      font-family: 'Space Mono', monospace;
+      background: var(--border2);
+      padding: 0 4px;
+      border-radius: 3px;
+      font-size: 10px;
+      color: var(--accent);
+    }
+
+    .cal-loading {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-align: center;
+      padding: 24px 0;
+      font-style: italic;
+    }
+    .cal-day-group { margin-bottom: 14px; }
+    .cal-day-label {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid var(--border);
+    }
+    .cal-event {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 7px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .cal-event:last-child { border-bottom: none; }
+    .cal-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 4px;
+    }
+    .cal-event-title { font-size: 12px; color: var(--text); line-height: 1.3; }
+    .cal-event-time {
+      font-size: 10px;
+      color: var(--text-muted);
+      font-family: 'Space Mono', monospace;
+      margin-top: 2px;
+    }
+    .cal-empty {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-align: center;
+      padding: 20px 0;
+      font-style: italic;
+    }
+
+    /* ── Footer ──────────────────────────────── */
+    .footer {
+      border-top: 1px solid var(--border);
+      padding: 12px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 10px;
+      font-family: 'Space Mono', monospace;
+      color: var(--text-muted);
+      margin-top: 20px;
+    }
+
+    /* ── Responsive ──────────────────────────── */
+    @media (max-width: 1200px) {
+      .body-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 900px) {
+      .kanban-board { grid-template-columns: 1fr; }
+      .kpi-row { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 600px) {
+      .main { padding: 14px; }
+      .header, .tab-nav { padding-left: 14px; padding-right: 14px; }
+      .kpi-row { grid-template-columns: 1fr; }
+      .footer { flex-direction: column; gap: 6px; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+  ██████████ DATA BLOCK ████████████████████
+  Update these constants to refresh dashboard.
+  Fred manages TODOS. Clint manages MANUAL_DATA.
+  ══════════════════════════════════════════ -->
+<script>
+
+  /* ──────────────────────────────────────────
+     GOOGLE CALENDAR SETUP (one-time)
+     ──────────────────────────────────────────
+     1. Go to: console.cloud.google.com
+     2. Create project → "Fred Dashboard"
+     3. APIs & Services → Library → Enable "Google Calendar API"
+     4. APIs & Services → OAuth consent screen
+        - User type: External
+        - Add your email as test user
+        - Scopes: add calendar.readonly
+     5. Credentials → Create Credentials → OAuth 2.0 Client ID
+        - Application type: Web application
+        - Authorized JS origins: https://clintryan.github.io
+     6. Copy Client ID and paste below
+     ──────────────────────────────────────────
+  */
+  const GOOGLE_CLIENT_ID = 'YOUR_CLIENT_ID_HERE';
+
+  /* ── Stripe (Fred updates via API) */
+  const STRIPE_DATA = {
+    mtd_revenue:  437,
+    last_month:   950,
+    last_updated: "2026-04-05"
+  };
+
+  /* ── Manual income (Clint updates) */
+  const MANUAL_DATA = {
+    teaching_mtd: 0,
+    other_mtd:    0,
+    note:         "Teaching starts May 5"
+  };
+
+  /* ── Sessions + students */
+  const SESSION_DATA = {
+    sessions_mtd:        16,
+    sessions_last_month: 38,
+    active_students:     12,
+    trials_mtd:          2
+  };
+
+  /* ── April revenue goal (recoup Claude Max) */
+  const GOAL = {
+    target:   250,
+    current:  0,
+    deadline: "2026-04-30"
+  };
+
+  /* ── Todos: Must / Should / Could + persona tag
+     Tags: fluentrx | coder | teacher | trader | fred
+     Fred reprioritizes each session from todos.md
+  */
+  const TODOS = {
+    must: [
+      { id: 'newton-rejection', text: "Send Newton rejection — draft ready, to: brian.d@newton.ac.th, CC: joshua.e@newton.ac.th", tag: "teacher" },
+      { id: 'bcc-contract',     text: "Chase BCC contract — signing April 10, 10am, BCC Silom. Contract not received.", tag: "teacher" },
+      { id: 'nancy-lin',        text: "Nancy Lin — replied Apr 8. Offered weeknights 18–24 TW time + Sat 09–15 late April. Awaiting slot confirmation.", tag: "fluentrx" },
+      { id: 'welcome-seq',      text: "Deploy welcome email sequence — 4 emails drafted, 3 checks before going live", tag: "fluentrx" },
+    ],
+    should: [
+      { id: 'weekend-sched',  text: "Decide weekend schedule post-May 5 (how many sessions, which days)", tag: "fluentrx" },
+      { id: 'price-raise',    text: "Price raise for new students — do alongside rebrand", tag: "fluentrx" },
+      { id: 'rebrand',        text: "FluentRx rebrand — brainstorm done, pick direction + domain", tag: "fluentrx" },
+      { id: 'italki',         text: "italki profile setup — approved, never configured. Zero-cost acquisition.", tag: "fluentrx" },
+      { id: 'fluentrx-down',  text: "Take fluentrx.com down / make private before May 5 (work permit)", tag: "fluentrx" },
+      { id: 'stripe-api',     text: "Call Stripe API — verify restricted key, pull April revenue data", tag: "fred" },
+    ],
+    could: [
+      { id: 'marketplace',   text: "Update AmazingTalker, Preply, italki profiles — stale, wrong brand voice", tag: "fluentrx" },
+      { id: 'fiverr',        text: "First Fiverr/Upwork listing — AI workflow automations angle", tag: "coder" },
+      { id: 'resumes',       text: "Update all 3 resumes — replace Toronto with Bangkok", tag: "fred" },
+      { id: 'crypto-bot',    text: "Crypto bot project — waiting on Paradise's training docs", tag: "trader" },
+      { id: 'ai-tutor',      text: "AI tutor agent moonshot (CoderClint × FluentRx crossover)", tag: "coder" },
+      { id: 'voice-agent',   text: "Voice agent first build — high potential, never built one", tag: "coder" },
+    ]
+  };
+
+  /* ── Personas */
+  const PERSONAS = {
+    all:      { label: 'ALL',             color: '#00D4FF', tag: null,       calId: null },
+    fluentrx: { label: 'FluentRx',        color: '#00D4FF', tag: 'fluentrx', calId: 'fluentrx@gmail.com' },
+    coder:    { label: 'CoderClint',      color: '#A78BFA', tag: 'coder',    calId: 'coderclint@gmail.com' },
+    teacher:  { label: 'ClintTeacher',    color: '#10B981', tag: 'teacher',  calId: 'clintteacher@gmail.com' },
+    trader:   { label: 'TraderSkinFlint', color: '#F59E0B', tag: 'trader',   calId: 'traderskinflint@gmail.com' },
+  };
+
+  /* ── Calendar sources (for event fetching) */
+  const CALENDAR_SOURCES = [
+    { id: 'fluentrx@gmail.com',       tag: 'fluentrx', color: '#00D4FF' },
+    { id: 'clintteacher@gmail.com',    tag: 'teacher',  color: '#10B981' },
+    { id: 'coderclint@gmail.com',      tag: 'coder',    color: '#A78BFA' },
+    { id: 'traderskinflint@gmail.com', tag: 'trader',   color: '#F59E0B' },
+  ];
+
+  /* ── Tag display labels */
+  const TAG_LABELS = {
+    fluentrx: 'FluentRx',
+    coder:    'CoderClint',
+    teacher:  'Teacher',
+    trader:   'Trader',
+    fred:     'Fred'
+  };
+
+  /* ── Agent Sessions
+     Fred updates this from Mission-Control/handoffs/*.md at session start.
+     status: 'active' | 'done' | 'blocked'
+  */
+  const AGENT_SESSIONS = [
+    // { id: 'worksheet-html', task: 'Worksheet generator — local HTML', tag: 'fluentrx', status: 'active', since: '2026-04-08', todoId: 'welcome-seq' },
+  ];
+
+  /* ── Social Queue
+     ⚠️  DO NOT EDIT MANUALLY.
+     Synced from Mission-Control/social-queue.md by Fred at session start.
+     status: 'draft' | 'posted'
+  */
+  const SOCIAL_QUEUE = [
+    { date: '2026-04-10', persona: '@__fluentrx__', tag: 'fluentrx', draft: 'Swapping "but" for "however" is the same word, same meaning.\n\nBut one belongs in a business email and the other belongs in a text message.\n\nThis week\'s Friday Fix: the 4 connector swaps that instantly raise your register.\n\nFree: fluentrx.com/friday-fix/raise-your-register-connectors', status: 'draft' },
+    { date: '2026-04-10', persona: '@__fluentrx__', tag: 'fluentrx', draft: 'Know when to use "consequently" vs "therefore"?\n\nMost advanced learners don\'t. (It\'s not obvious.)\n\nFree practice sheet this week — 3 exercises, answer key included.\n\nfluentrx.com/practice/raise-your-register-connectors', status: 'draft' },
+    { date: '2026-04-10', persona: '@__teacherclint__', tag: 'teacher', draft: 'One thing I notice in almost every advanced student\'s writing:\n\nThey use "but" and "so" where a native speaker would use "however" and "consequently."\n\nIt\'s not wrong. It just sounds casual. And sometimes that matters a lot.\n\nNew Friday Fix on this 👇\nfluentrx.com/friday-fix/raise-your-register-connectors', status: 'draft' },
+    { date: '2026-04-10', persona: '@__teacherclint__', tag: 'teacher', draft: 'Quick question for advanced English learners:\n\nDo you know the punctuation rule for formal connectors?\n\n(Most people get this wrong even when they know the words.)\n\nAnswer in this week\'s free email: fluentrx.com/friday-fix/raise-your-register-connectors', status: 'draft' },
+  ];
+
+  /* ── Friday Fix Work Log
+     Fred updates this each Friday Fix session.
+     status: 'done' | 'pending' | 'blocked'
+     type: 'decision' | 'task' | 'idea'
+  */
+  const FRIDAY_FIX_LOG = [
+    { date: '2026-04-15', type: 'decision', status: 'done',    text: 'Coupon standardised: FRIDAYFIX = 10% off. Retired FRIDAYFIX20. Reason: avoid coupon fatigue before 5-year anniversary promo.' },
+    { date: '2026-04-15', type: 'task',     status: 'done',    text: 'April 17 TBS card populated: TBS-119 · The Business of Prediction Markets (auto-fetched from Lesson Library sheet row 2).' },
+    { date: '2026-04-15', type: 'task',     status: 'pending', text: 'April 17 — deploy + send via Mail Meteor. Clint\'s action.' },
+    { date: '2026-04-15', type: 'idea',     status: 'pending', text: 'Rails endpoint for TBS episode data: GET /api/v1/friday_fix_episode — removes need for Chrome auth to read sheet.' },
+    { date: '2026-04-10', type: 'task',     status: 'done',    text: 'April 10 — sent via Mail Meteor. Variant A (platform cut).' },
+    { date: '2026-04-08', type: 'decision', status: 'done',    text: 'Format rules locked: .bq single-line corrections, text logo, TBS thumbnail unclickable, no academic terms.' },
+    { date: '2026-04-08', type: 'idea',     status: 'pending', text: 'FridayFix.gs — Apps Script sender to replace Mail Meteor. Tabled until April 17 is shipped.' },
+    { date: '2026-04-07', type: 'idea',     status: 'pending', text: 'Welcome email sequence (4 emails, Day 0/3/7/12). Draft in _context.md. Needs FRIDAYFIX coupon in app. High priority.' },
+  ];
+
+  /* ── Build Log
+     ⚠️  DO NOT EDIT MANUALLY.
+     This array is synced from Mission-Control/build-log.md by Fred at session start.
+     To add an entry: append to build-log.md with "Synced: ❌" — Fred handles the rest.
+     Feeds build-in-public strategy for @__fluentrx__ / @__teacherclint__ / @__kryptoklint__.
+     Last synced: 2026-04-16
+     Fields: date, title, description, type (feature|automation|fix|infra), tag (persona)
+  */
+  const BUILD_LOG = [
+    {
+      date:        "2026-04-20",
+      title:       "zshrc oh-my-zsh Fix",
+      description: "Fixed a zsh parse error preventing oh-my-zsh from loading. Root cause: a dead git() function in ~/.zshrc was being re-defined on re-source after alias git=... had already set git as an alias. Removed the dead function, added unalias git guard. oh-my-zsh now loads cleanly with robbyrussell theme showing git branch in prompt.",
+      type:        "fix",
+      tag:         "coder"
+    },
+    {
+      date:        "2026-04-16",
+      title:       "Session Duration-Based Income Calculation",
+      description: "Added duration-aware income calculation to the Appointment model. 25-min sessions calculate at 60% of the base rate, 50-min at 100%, and 80/90-min at 150%. Also added Appointment.monthly_income for the dashboard auto-refresh. No migration needed — duration derived from existing timestamps. Verified in Rails console with correct results ($15, $25, $37.50). Deployed as v445.",
+      type:        "feature",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-16",
+      title:       "Sprint Methodology + 3 IDE Agent Handoffs",
+      description: "Established the 14-day sprint methodology for the Max→Pro token window. Agreed workflow: Fred (Cowork) writes handoff files, IDE agent runs with --dangerously-skip-permissions, REVIEW.md contains explicit test + deploy instructions, Clint merges and does one daily Heroku push. Three handoffs written and queued: (1) FluentRx session pricing for 25-min/90-min durations, (2) Dashboard auto-refresh via GitHub Actions pulling Stripe MTD + Heroku income, (3) Dashboard full rebuild in React + Vite + ShadCN/UI.",
+      type:        "infra",
+      tag:         "coder"
+    },
+    {
+      date:        "2026-04-16",
+      title:       "CoderClint Gmail Mailer: OAuth + send-email.py",
+      description: "Wired up a full Gmail API email system for CoderClint. Authenticated cryptoklint@gmail.com via OAuth (Desktop app flow, Google Cloud Console). Built send-email.py — hardcoded allowlist of four project addresses, In-Reply-To threading so follow-up sends reply into the same Gmail thread, thread state persisted in email-threads.json keyed by project name. Sender displays as 'Fred'. All four project inboxes confirmed receiving.",
+      type:        "infra",
+      tag:         "coder"
+    },
+    {
+      date:        "2026-04-15",
+      title:       "Deploy Gate Rules + Bridge Protocol Hardening",
+      description: "After a production incident (curly quote 500 on homepage), hardened the multi-agent deployment workflow. IDE agents are now prohibited from any git push or heroku command. All fluent-rx deploys go through a mandatory deploy gate: agent writes exact localhost verification URL + 4 deploy commands to .fred/status.md, Fred surfaces it to Clint, Clint verifies and runs the commands himself.",
+      type:        "infra",
+      tag:         "fred"
+    },
+    {
+      date:        "2026-04-15",
+      title:       "Late Cancel Bug Fix",
+      description: "Fixed a bug where a cancellation made 22+ hours before a session was incorrectly recorded as a late cancel. Root cause: the cancel action delegated all DB updates to the Cal.com webhook, which could arrive after the 12-hour late-cancel threshold if Cal.com retried a delayed delivery. Fix: appointment status and credit refund now happen inline immediately after Cal.com confirms the cancellation. The webhook becomes a no-op for already-cancelled records.",
+      type:        "fix",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-15",
+      title:       "Homepage Visual Polish",
+      description: "Tightened the homepage spacing and sharpened the type hierarchy across the brand-design-overhaul branch. Hero padding cut by 37%, all section padding reduced by ~33%, eyebrow labels now read as intentional small-caps, headings bumped to extrabold, section backgrounds made visibly distinct, and body copy uses the design system color instead of hardcoded gray.",
+      type:        "feature",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-15",
+      title:       "Marketplace Sync: 12-Hour Booking Window",
+      description: "MarketplaceSyncService was booking AmazingTalker sessions up to 48 hours in advance, but AT allows free cancellations within 12 hours — creating phantom Cal.com bookings that had to be manually cleaned up. Narrowed the sync window to 12 hours so sessions are only booked once AT is fully committed to them. Heroku Scheduler also changed from daily to hourly to ensure all sessions are caught within the window.",
+      type:        "fix",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-15",
+      title:       "Student Snapshot + fred:snapshot Rake Task Verified",
+      description: "Fixed and ran the student package snapshot runner on Heroku production — 22 paying students captured with ACTIVE/LAPSED/NO_CREDITS/EXPIRING_SOON status for the Wednesday MailMeteor re-engagement campaign. Confirmed fred:snapshot rake task is live on Heroku (lib/tasks/fred.rake was already in main).",
+      type:        "infra",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-14",
+      title:       "Font Unification + Scroll Animation + Card Icons",
+      description: "Completed the typography overhaul by dropping Playfair Display entirely — all headings now use Inter at extrabold (800) and bold (700) weights with tight letter-spacing. Added scroll entrance animation to all 16 Talk Business workflow cards using IntersectionObserver with 80ms stagger. Each card heading now has a matching Font Awesome icon.",
+      type:        "feature",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-13",
+      title:       "Brand Voice + Visual Overhaul: Typography, Copy, Footer, Components",
+      description: "Full outward-facing site overhaul across copy and design. Added Playfair Display serif font to all headings. Fixed responsive font scale — large sizes now fire at xl: (1280px+). Built new shared/_steps_flow.html.erb component. Rewrote copy on homepage, about, pricing, welcome, and client results pages. Redesigned footer with brand tagline, two clean nav columns, and 2026 copyright. Refactored Talk Business raw card HTML to use the universal base_card component.",
+      type:        "feature",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-13",
+      title:       "Heroku Deploy Fix + B06 Backfill: v428 Live",
+      description: "Resolved Heroku push rejection caused by a rogue @esbuild/linux-arm64 devDependency. Removed the bad dep, regenerated yarn.lock, pushed clean as v427. A follow-up fix for a LearnedVocabulary key mismatch deployed as v428. All 6 migrations ran clean including the 3 learning graph tables. Backfill processed 21 session reports: 21 session assessments and 127 learned vocabulary entries now in the DB.",
+      type:        "infra",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-13",
+      title:       "Course Page Polish: Workplace Situations + Interview Prep",
+      description: "Rebuilt the Workplace Situations and Interview Prep course pages from stub placeholders to full-depth marketing pages matching Talk Business. Each page has a hero section, 4 feature cards, a tabbed workflow timeline (Pre-Session / In-Session / Post-Session) with accent steps, and a pricing footer. Built using existing components with zero new CSS or JavaScript.",
+      type:        "feature",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-13",
+      title:       "Worksheet HTML Renderer: 16:9 Card Deck + Student Share Link",
+      description: "Rebuilt the FluentRx worksheet show view from scratch. Each enabled section displays as a 16:9 card in a scroll-snap deck — one card per section, projector-ready. Teachers get a collapsible section picker with a 'Copy student link' button. Students access worksheets via /w/:token URL with mark-complete checkboxes per card. Share token auto-generated on worksheet creation; existing worksheets backfilled.",
+      type:        "feature",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-14",
+      title:       "Nick Onboarded to FluentRx + AT Sync Confirmed",
+      description: "Onboarded new AmazingTalker student Nick (doter1458@gmail.com) into FluentRx. Created user (ID: 373) and order (ID: 435) — 10x50-min sessions, purchased Apr 10, expires Jul 10 2026. Added Nick to KNOWN_STUDENTS in MarketplaceSyncService. Confirmed Heroku Scheduler is running rake marketplace:sync daily at midnight UTC. Fixed two bugs: backfill scripts must use Rails.root.join() for heroku runner, and User.new + save(validate: false) instead of find_or_create_by! to bypass Devise password validation.",
+      type:        "ops",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-20",
+      title:       "BCC Lesson Slide Template System — Teacher + Student + 5 Interactive Widgets",
+      description: "Built a comprehensive HTML/CSS/JS lesson slide system for M6 Statistics 1. Three files: lesson-template-teacher.html (1,798 lines — full answers, teacher notes, step-by-step worked example reveal), lesson-template-student.html (1,697 lines — answers physically absent from DOM, working spaces added), widgets.js (1,066 lines — 5 interactive SVG widgets: normal distribution μ/σ slider, histogram builder, draggable scatter+regression with live r, click-to-reveal probability tree, Venn diagram with conditional probability). All 16 slide types covered. KaTeX math. Zero dependencies except Google Fonts CDN.",
+      type:        "feature",
+      tag:         "teacher"
+    },
+    {
+      date:        "2026-04-20",
+      title:       "BCC Teacher Dashboard — GitHub Pages Deploy",
+      description: "Self-contained HTML teacher dashboard for BCC prep. Auto-calculates current week from May 11 2026. Shows chapter, objectives, holidays, assignment schedule, class intelligence for 611/612/613/614. FluentRx light-blue palette, offline-capable. Deployed to clintryan.github.io/teacher-dashboard. Sanitized (no student names in public version).",
+      type:        "feature",
+      tag:         "teacher"
+    },
+    {
+      date:        "2026-04-13",
+      title:       "BCC Semester 1 Course Plan: Statistics 1 Week-by-Week Scope",
+      description: "Built a full Semester 1 course plan for M6 Additional Mathematics at Bangkok Christian College, covering all 7 chapters of Pearson Statistics 1 across 19 weeks (May 11 – Sept 18). Plan includes chapter-by-chapter learning objectives, suggested activities, holiday impact notes, assignment schedule, midterm/unit quiz timing, and differentiation notes for Track 2 (614).",
+      type:        "feature",
+      tag:         "teacher"
+    },
+    {
+      date:        "2026-04-13",
+      title:       "Student Learning Graph: Relational Tables for Scores + Vocabulary",
+      description: "Lifted rubric scores and vocabulary items out of JSON blobs in session reports and into three proper relational tables: session_assessments (one row per report with 6 dimension scores), learned_vocabulary (one row per student/word pair), and student_progress_snapshots (weekly aggregates). A background job now auto-populates all three after every session report is saved. Foundational data layer for flashcards and progress charts.",
+      type:        "infra",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-12",
+      title:       "Marketing Overhaul: 3 Courses, Clean Brand Voice",
+      description: "Collapsed FluentRx from 4 course tracks to 3: Talk Business, Workplace Situations, and Interview Prep. Dropped Exam Prep, Future Leaders, and Educators entirely — old URLs redirect to home. Two new course pages created. Homepage hero now has a single CTA pointing to /start. Brand voice cleaned throughout — no mission statements, no IELTS/TOEFL references anywhere in active views.",
+      type:        "feature",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-12",
+      title:       "Fred Snapshot Rake Task",
+      description: "Added a fred:snapshot rake task that generates a structured markdown report of student package status — expiring packages, low credits, lapsed students, unconverted trials, and active students — in a single Heroku command. Fred (Cowork) can now pipe output directly to _db-snapshot.md for daily upsell targeting without opening the Rails console.",
+      type:        "automation",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-11",
+      title:       "Session Report Rubric Assessment & Spider Chart — Merged + Deployed",
+      description: "Session reports now capture structured assessment data across 6 rubric dimensions (task completion, grammar, vocabulary, fluency, engagement, pronunciation) with 0-10 scores. A new Assessment tab renders a radar/spider chart using Chart.js alongside dimension detail cards. The Overview tab now shows previous-session objective outcomes and next-session focus objectives. Merged feature/report-rubric-data → main and deployed to Heroku.",
+      type:        "feature",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-09",
+      title:       "Session Report Rubric Assessment & Spider Chart",
+      description: "Session reports now capture structured assessment data across 6 rubric dimensions (task completion, grammar, vocabulary, fluency, engagement, pronunciation) with 0-10 scores. A new Assessment tab renders a radar/spider chart using Chart.js alongside dimension detail cards. The Overview tab now shows previous-session objective outcomes and next-session focus objectives. On feature branch — pending test transcript validation before merge.",
+      type:        "feature",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-09",
+      title:       "Report Pipeline Sync: Single Prompt Source + IDE Agent Parity",
+      description: "The class report generator now has a single source of truth for its LLM prompt. The IDE agent workflow (Gemini + to-be-processed folder) and the automated Drive pipeline both read from the same file via a symlink — no manual sync required. The IDE agent also gained two capabilities it was previously missing: automatic injection of prior session goals for continuity, and interview-session detection that appends the interview supplement prompt automatically.",
+      type:        "infra",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-09",
+      title:       "Practice Tab Fix + Claude API Timeout Increase",
+      description: "Two fixes shipped together. The Practice tab in every session report was always empty — Claude was outputting exercises under `practice_exercises` but the view expected `practice.questions`. Fixed by adding an explicit JSON skeleton to the prompt in report_format.md. Also bumped the Faraday read timeout from 120s to 300s — long transcripts (55k+ chars) were hitting the ceiling when calling the Claude API.",
+      type:        "fix",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-09",
+      title:       "Marketplace Sync — DB Write Fix + Cowork Skill Retired",
+      description: "The marketplace sync was creating Cal.com bookings but never writing appointments to the FluentRx DB — it relied on a Cal.com webhook round-trip that doesn't fire for API-created bookings. Fixed MarketplaceSyncService to write Appointment records directly after each successful booking. Backfilled three orphaned sessions. The old manual Cowork skill (GCal + state file + heroku run commands) is retired and replaced with a status-check-and-trigger-only skill.",
+      type:        "fix",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-09",
+      title:       "Drive Report Pipeline — Encoding Crash Fix + Renewal Hardening",
+      description: "The automated class report pipeline was silently crashing on every run — Google Drive's export API returns ASCII-8BIT binary, which blew up when concatenated with UTF-8 strings in the Claude API request builder. The job exited 'Complete' but dropped every file. Fixed by normalising encoding at the source. Also hardened watch channel renewal: register-before-stop, 48h expiry window, 6h cron (was daily). Andrew Chang's April 8 report recovered and emailed.",
+      type:        "fix",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-08",
+      title:       "Interview Prep Mode — Auto-detected Report Tab",
+      description: "The FluentRx class report pipeline now auto-detects interview prep sessions and produces a richer report. When the transcript contains interview keywords, the report gains a new 🎤 Interview Q&A tab — one card per question practiced, with the student's answer, what worked, coaching notes, and a polished model answer in their own voice. Goals section adds an [Interview] badge when the focus is technique rather than grammar. No new ENV vars.",
+      type:        "feature",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-08",
+      title:       "Marketplace Sync Pipeline Fix + Heroku Scheduler",
+      description: "AT and Preply bookings now sync into Cal.com automatically every morning. Fixed three compounding bugs: a pending DB migration, a missing Heroku Scheduler addon, and an HTTP 301 redirect that Ruby's Net::HTTP was silently swallowing — causing every run to fetch 0 events without raising an error. Daily Heroku Scheduler job configured: rake marketplace:sync at midnight UTC.",
+      type:        "fix",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-08",
+      title:       "Friday Fluency Fix · April 10 — Raise Your Register",
+      description: "This week's Friday Fix is built around raising written register — swapping casual connectors (but, so, also) for formal ones (however, consequently, furthermore). Includes the full email HTML, an interactive practice sheet with answer-key toggle, and deploy notes. First issue produced end-to-end via Fred's new session-launcher handoff system.",
+      type:        "feature",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-07",
+      title:       "Marketplace Intake Skill — AT + Preply Student Onboarding",
+      description: "Built a structured 8-step skill for onboarding new AmazingTalker or Preply students mid-package — retroactive session backfilling, order creation, Cal.com booking, and credit reconciliation. Handles AT-specific edge cases (order validation, session status, timezone offsets). Generates a ready-to-run Heroku handoff script so the whole intake takes one copy-paste.",
+      type:        "automation",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-07",
+      title:       "Marketplace Sync System — AmazingTalker + Preply → FluentRx + Cal.com",
+      description: "Replaced a manual copy-paste booking workflow with a fully automated hourly Heroku job. Fetches AT and Preply iCal feeds, parses upcoming sessions, creates Cal.com bookings with availability bypass (marketplace sessions fall outside normal scheduling windows), and deduplicates via a DB-backed event store that survives dyno restarts. Cancellations detected and cleaned up automatically.",
+      type:        "automation",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-06",
+      title:       "Automated Class Report Pipeline",
+      description: "After each class, Tactiq saves the transcript to Google Drive. Google pushes a notification to the FluentRx app, which fetches the transcript, calls the Claude API to generate a structured JSON session report, saves it to the student's profile, and emails them — with zero manual steps. Matches transcripts to appointments by time window. Idempotent (never double-processes).",
+      type:        "automation",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-06",
+      title:       "Drive Pipeline On/Off Toggle",
+      description: "Added DRIVE_PIPELINE_ENABLED config var to the FluentRx Rails app. Flip it in Heroku in 10 seconds to pause or resume the automated report pipeline without a deploy. Useful for controlling Claude API token spend.",
+      type:        "infra",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-05",
+      title:       "Fred Dashboard — Live on GitHub Pages",
+      description: "Built and deployed a personal command-center dashboard at clintryan.github.io/fred-dashboard. Dark command-center aesthetic. Tabs for each persona (FluentRx, CoderClint, ClintTeacher, TraderSkinFlint). MoSCoW kanban, KPI cards, upcoming calendar panel. Fred updates the data block each session.",
+      type:        "feature",
+      tag:         "fred"
+    },
+    {
+      date:        "2026-04-05",
+      title:       "Friday Fluency Fix — Welcome Email Sequence",
+      description: "Drafted a 4-email onboarding sequence for new FluentRx subscribers (~300 contacts, no welcome flow). Day 0 / Day 3 / Day 7 / Day 12 cadence. Designed to convert cold subscribers into trial bookings. Pending: FRIDAY10 discount code setup before going live.",
+      type:        "feature",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-06",
+      title:       "Freddy Fluent — Operational Knowledge Base",
+      description: "Built a full operational context system for the FluentRx business: _manager.md (voice, rules, draft workflow), _domain-logic.md (credit system, bookings, wallet, webhooks), _irb-playbook.md (Rails console recipes), _schema-snapshot.md (DB structure), symlinked live pricing + FAQ data. Claude Code now auto-loads this context for any FluentRx codebase session.",
+      type:        "infra",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-01",
+      title:       "Session Report Generator — Live",
+      description: "After each FluentRx class, a transcript is processed into a structured JSON report covering grammar corrections, pronunciation feedback, vocabulary items, talk-time analytics, and personalised next-session goals. The report is POSTed to the Rails app via webhook and the student receives an email with a link to their report page.",
+      type:        "automation",
+      tag:         "fluentrx"
+    },
+    {
+      date:        "2026-04-01",
+      title:       "Worksheet Generator — Live",
+      description: "Generates Talk Business Series (TBS) worksheets from YouTube video transcripts. Two registers: formal and casual. Worksheets include vocabulary, discussion questions, and exercises. Built as a Gemini IDE agent automation — zero manual formatting.",
+      type:        "automation",
+      tag:         "fluentrx"
+    },
+  ];
+
+  const ROADMAP = [
+    {
+      phase: "1A",
+      title: "Report Rubric Data",
+      status: "active",
+      target: "Apr 2026",
+      description: "Extend session report JSON with 6 rubric dimensions. Add spider chart + next-session objectives to report HTML. Data accumulates silently — no change to student output yet.",
+      branch: "feature/report-rubric-data",
+      tag: "fluentrx"
+    },
+    {
+      phase: "1B",
+      title: "Split Dynamic Report into Partials",
+      status: "queued",
+      target: "Apr 2026",
+      description: "_dynamic_report.html.erb is 853 lines / 19k tokens — exceeds IDE agent read limit. Split into ~10 partials so agents can work on individual sections cleanly.",
+      branch: "feature/report-partials",
+      tag: "fluentrx"
+    },
+    {
+      phase: "2A",
+      title: "Worksheet Section Checkboxes",
+      status: "queued",
+      target: "May 2026",
+      description: "45 sections across pre/in/post-class. LLM generates full JSON in one call. Teacher toggles sections on/off. Display config stored separately — no re-generation needed.",
+      branch: "feature/worksheet-sections",
+      tag: "fluentrx"
+    },
+    {
+      phase: "2B",
+      title: "Student Profile Integration",
+      status: "queued",
+      target: "May 2026",
+      description: "JSON profile per student (job, industry, goals, weaknesses, vocab mastered). Injected into worksheet generation prompt for personalised scenarios and questions.",
+      branch: "feature/student-profiles",
+      tag: "fluentrx"
+    },
+    {
+      phase: "2C",
+      title: "Worksheet Level Differentiation",
+      status: "queued",
+      target: "May 2026",
+      description: "Scaffold toggle (B1/B2/C1). One worksheet generated, rendered with appropriate support layer. Parallel full versions as future premium feature.",
+      branch: "feature/worksheet-sections",
+      tag: "fluentrx"
+    },
+    {
+      phase: "3",
+      title: "Student Learning Graph",
+      status: "planned",
+      target: "Jun 2026",
+      description: "Three new DB tables: session_assessments, learned_vocabulary, student_progress_snapshots. Background job extracts rubric data + vocab from every session report.",
+      branch: "feature/learning-graph",
+      tag: "fluentrx"
+    },
+    {
+      phase: "4",
+      title: "Flashcards",
+      status: "planned",
+      target: "Jul 2026",
+      description: "Spaced repetition from learned_vocabulary. Cards carry context sentence from original session. Mobile-first web. Better than Anki because it's personalised to the student's own classes.",
+      branch: "feature/flashcards",
+      tag: "fluentrx"
+    },
+    {
+      phase: "5",
+      title: "Periodic Progress Review",
+      status: "planned",
+      target: "Aug 2026",
+      description: "Agent looks at last N sessions → structured progress report with spider chart trends + concrete transcript evidence. On-demand or scheduled. Premium add-on.",
+      branch: "feature/progress-review",
+      tag: "fluentrx"
+    },
+    {
+      phase: "6",
+      title: "Teacher Input Step in Reports",
+      status: "planned",
+      target: "Sep 2026",
+      description: "Teacher reviews AI draft → confirms/edits teacher-rated fields (pronunciation, engagement) → approves → report posts. New UI step before student notification.",
+      branch: "feature/teacher-review",
+      tag: "fluentrx"
+    },
+    {
+      phase: "7",
+      title: "Teacher Tools SaaS",
+      status: "vision",
+      target: "Post-May 2026",
+      description: "Worksheet generator (+ eventually full suite) sold to other ESL teachers. Entry price ~$15-29/mo. Built inside FluentRx Rails app — multi-tenant by teacher. Beat LinguaHouse on speed, customisation, price, personalisation.",
+      branch: null,
+      tag: "coder"
+    },
+    {
+      phase: "8",
+      title: "AI Teacher Assistant",
+      status: "vision",
+      target: "2026–2027",
+      description: "Agent with full access to student learning graph. Suggests session focus, flags plateaus, generates targeted exercises, supports async student practice. Amplifies the teacher — doesn't replace them.",
+      branch: null,
+      tag: "fluentrx"
+    }
+  ];
+
+</script>
+
+<!-- HEADER -->
+<header class="header">
+  <div>
+    <div class="logo">FRED</div>
+    <div class="logo-sub">Command Center · Clint Ryan</div>
+  </div>
+  <div class="header-meta">
+    <div class="header-date" id="header-date">—</div>
+    <div id="header-stripe-note">Stripe: —</div>
+  </div>
+</header>
+
+<!-- PERSONA TABS -->
+<nav class="tab-nav" id="tab-nav">
+  <button class="tab-btn active" data-persona="all">ALL</button>
+  <button class="tab-btn" data-persona="fluentrx">FluentRx</button>
+  <button class="tab-btn" data-persona="coder">CoderClint</button>
+  <button class="tab-btn" data-persona="teacher">ClintTeacher</button>
+  <button class="tab-btn" data-persona="trader">TraderSkinFlint</button>
+</nav>
+
+<!-- MAIN CONTENT -->
+<div class="main">
+
+  <!-- KPI ROW (rendered dynamically per tab) -->
+  <div class="kpi-row" id="kpi-row"></div>
+
+  <!-- BODY: Kanban + Calendar -->
+  <div class="body-grid">
+
+    <!-- KANBAN BOARD -->
+    <div class="panel">
+      <div class="section-header">
+        <div class="section-title" id="kanban-title">All Todos</div>
+        <div class="section-badge">MoSCoW · click to complete</div>
+      </div>
+      <div class="kanban-board" id="kanban-board"></div>
+    </div>
+
+    <!-- CALENDAR PANEL -->
+    <div class="panel">
+      <div class="section-header">
+        <div class="section-title">Upcoming</div>
+        <button class="cal-auth-btn" id="cal-auth-btn" onclick="handleCalAuth()">Connect Calendar</button>
+      </div>
+      <div id="calendar-content"></div>
+    </div>
+
+  </div>
+
+  <!-- SOCIAL QUEUE + AGENT STATUS ROW -->
+  <div class="social-row" style="margin-top:18px;">
+
+    <!-- SOCIAL QUEUE -->
+    <div class="panel">
+      <div class="section-header">
+        <div class="section-title">Social Queue</div>
+        <div class="section-badge" id="social-queue-badge">ready to post</div>
+      </div>
+      <div id="social-queue-content"></div>
+    </div>
+
+    <!-- ACTIVE AGENTS -->
+    <div class="panel">
+      <div class="section-header">
+        <div class="section-title">Active Agents</div>
+        <div class="section-badge" id="agent-sessions-badge">dispatched sessions</div>
+      </div>
+      <div id="agent-sessions-content"></div>
+    </div>
+
+  </div>
+
+  <!-- ROADMAP -->
+  <div class="panel" style="margin-top:0;">
+    <div class="section-header">
+      <div class="section-title">Product Roadmap</div>
+      <div class="section-badge">8 phases · AI teacher platform</div>
+    </div>
+    <div id="roadmap-content"></div>
+  </div>
+
+  <!-- FRIDAY FIX WORK LOG -->
+  <div class="panel" style="margin-top:0;">
+    <div class="section-header">
+      <div class="section-title">Friday Fix — Work Log</div>
+      <div class="section-badge">decisions · tasks · ideas</div>
+    </div>
+    <div id="friday-fix-log-content"></div>
+  </div>
+
+  <!-- BUILD LOG -->
+  <div class="panel" style="margin-top:0;">
+    <div class="section-header">
+      <div class="section-title">Build Log</div>
+      <div class="section-badge">shipped · build in public</div>
+    </div>
+    <div id="build-log-content"></div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div>FRED v2 · April 2026</div>
+  <div id="footer-note">—</div>
+  <div>clintryan.github.io/fred-dashboard</div>
+</footer>
+
+<!-- ══════════════════════════════════════════
+  RENDER SCRIPT
+  ══════════════════════════════════════════ -->
+<script>
+
+  // ── State
+  let currentPersona = 'all';
+  let calAccessToken  = null;
+  let allCalEvents    = [];
+  let tokenClient     = null;
+  const IS_CAL_CONFIGURED = (GOOGLE_CLIENT_ID !== 'YOUR_CLIENT_ID_HERE');
+
+  // ── Helpers
+  function today() { return new Date(); }
+  function fmtDate(d) {
+    return d.toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  }
+  function daysUntil(dateStr) {
+    const target = new Date(dateStr + 'T00:00:00');
+    const now    = new Date();
+    return Math.max(0, Math.ceil((target - now) / 86400000));
+  }
+  function pctChange(cur, last) {
+    if (!last) return null;
+    return Math.round(((cur - last) / last) * 100);
+  }
+  function getDone() {
+    try { return new Set(JSON.parse(localStorage.getItem('fred_checked') || '[]')); }
+    catch { return new Set(); }
+  }
+  function saveDone(set) {
+    localStorage.setItem('fred_checked', JSON.stringify([...set]));
+  }
+
+  // ── Bootstrap header
+  document.getElementById('header-date').textContent = fmtDate(today());
+  document.getElementById('header-stripe-note').textContent = 'Stripe: ' + STRIPE_DATA.last_updated;
+  document.getElementById('footer-note').textContent = 'Stripe data: ' + STRIPE_DATA.last_updated;
+
+  // ── Tab switching
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentPersona = btn.dataset.persona;
+      renderKPI();
+      renderKanban();
+      renderCalendarView();
+    });
+  });
+
+  // ═══════════════════════════════════════════
+  // KPI RENDERING
+  // ═══════════════════════════════════════════
+  function renderKPI() {
+    const row = document.getElementById('kpi-row');
+    const totalMTD = STRIPE_DATA.mtd_revenue + MANUAL_DATA.teaching_mtd + MANUAL_DATA.other_mtd;
+    const goalPct  = Math.min(100, Math.round((GOAL.current / GOAL.target) * 100));
+    const revDelta = pctChange(totalMTD, STRIPE_DATA.last_month);
+
+    let cards = [];
+
+    if (currentPersona === 'all') {
+      cards = [
+        {
+          label: 'Revenue MTD',
+          value: '$' + totalMTD.toLocaleString(),
+          delta: revDelta,
+          sub:   'Stripe + manual · $' + STRIPE_DATA.last_month.toLocaleString() + ' last month',
+        },
+        {
+          label: 'Active Students',
+          value: SESSION_DATA.active_students,
+          sub:   SESSION_DATA.trials_mtd + ' trial(s) this month · ' + SESSION_DATA.sessions_mtd + ' sessions MTD',
+        },
+        {
+          label: 'April Goal (Fred)',
+          value: goalPct + '%',
+          warn:  true,
+          goal:  { current: GOAL.current, target: GOAL.target, pct: goalPct },
+        },
+      ];
+
+    } else if (currentPersona === 'fluentrx') {
+      const sesDelta = pctChange(SESSION_DATA.sessions_mtd, SESSION_DATA.sessions_last_month);
+      cards = [
+        {
+          label: 'Revenue MTD',
+          value: '$' + STRIPE_DATA.mtd_revenue.toLocaleString(),
+          delta: revDelta,
+          sub:   'Stripe · last month $' + STRIPE_DATA.last_month.toLocaleString(),
+        },
+        {
+          label: 'Sessions MTD',
+          value: SESSION_DATA.sessions_mtd,
+          delta: sesDelta,
+          sub:   'vs ' + SESSION_DATA.sessions_last_month + ' last month',
+          green: true,
+        },
+        {
+          label: 'Active Students',
+          value: SESSION_DATA.active_students,
+          sub:   SESSION_DATA.trials_mtd + ' trial(s) · ~$34–40/session',
+        },
+      ];
+
+    } else if (currentPersona === 'teacher') {
+      const dLeft = daysUntil('2026-05-05');
+      cards = [
+        { label: 'Days to BCC Start',  value: dLeft,        sub:  'May 5, 2026',        warn: true },
+        { label: 'Contract',           value: 'PENDING',    sub:  'Signing Apr 10, 10am · BCC Silom', warn: true },
+        { label: 'Monthly Salary',     value: '฿73k',       sub:  '55k base + 14k allowance + 4k homeroom' },
+      ];
+
+    } else if (currentPersona === 'coder') {
+      cards = [
+        { label: 'Active Projects',    value: '1',          sub:  'bybit-trading-bot (live)' },
+        { label: 'Revenue Opps',       value: '4',          sub:  'Fiverr · Voice Agent · Landing · SaaS' },
+        { label: 'Top Priority',       value: 'Fiverr',     sub:  'AI automations angle — first listing' },
+      ];
+
+    } else if (currentPersona === 'trader') {
+      cards = [
+        { label: 'SOL Portfolio',      value: '~$1k',       sub:  '3E5D…hZEZr · Nest egg', warn: true },
+        { label: 'Bot Status',         value: 'WAITING',    sub:  'Pending Paradise training docs' },
+        { label: 'Job Monitoring',     value: 'PASSIVE',    sub:  'Singapore / Asian FinTech roles only' },
+      ];
+    }
+
+    row.innerHTML = cards.map(c => buildKPICard(c)).join('');
+  }
+
+  function buildKPICard(c) {
+    const cls = c.warn ? ' warn' : c.green ? ' green' : '';
+    let deltaHtml = '';
+    if (c.delta !== null && c.delta !== undefined) {
+      const dir = c.delta >= 0 ? 'up' : 'down';
+      const arrow = c.delta >= 0 ? '↑' : '↓';
+      deltaHtml = `<div class="kpi-delta ${dir}">${arrow} ${Math.abs(c.delta)}% vs last month</div>`;
+    }
+    let goalHtml = '';
+    if (c.goal) {
+      const barCls = c.goal.pct < 30 ? ' danger' : c.goal.pct < 70 ? ' warn' : '';
+      goalHtml = `
+        <div class="goal-bar-track">
+          <div class="goal-bar-fill${barCls}" style="width:${c.goal.pct}%"></div>
+        </div>
+        <div class="goal-bar-pct">$${c.goal.current} of $${c.goal.target} — recoup Claude Max</div>`;
+    }
+    return `<div class="kpi-card${cls}">
+      <div class="kpi-label">${c.label}</div>
+      <div class="kpi-value">${c.value}</div>
+      ${deltaHtml}
+      ${goalHtml}
+      ${c.sub ? `<div class="kpi-sub">${c.sub}</div>` : ''}
+    </div>`;
+  }
+
+  // ═══════════════════════════════════════════
+  // KANBAN RENDERING
+  // ═══════════════════════════════════════════
+  function renderKanban() {
+    const persona = PERSONAS[currentPersona];
+    const tagFilter = persona.tag;
+
+    document.getElementById('kanban-title').textContent =
+      tagFilter ? persona.label + ' Todos' : 'All Todos';
+
+    function filter(todos) {
+      if (!tagFilter) return todos;                          // ALL: show everything
+      return todos.filter(t => t.tag === tagFilter);        // persona: strict filter
+    }
+
+    const must   = filter(TODOS.must);
+    const should = filter(TODOS.should);
+    const could  = filter(TODOS.could);
+    const done   = getDone();
+
+    function buildCards(items) {
+      if (!items.length) return '<div class="kanban-empty">Nothing here</div>';
+      // Sort: undone first, done at bottom
+      const sorted = [...items].sort((a, b) => {
+        const aDone = done.has(a.id) ? 1 : 0;
+        const bDone = done.has(b.id) ? 1 : 0;
+        return aDone - bDone;
+      });
+      return sorted.map(t => {
+        const isDone   = done.has(t.id);
+        const agentSes = AGENT_SESSIONS.find(a => a.todoId === t.id);
+        let agentHtml  = '';
+        if (agentSes) {
+          const statusLabel = agentSes.status === 'active' ? '🔄 Agent active'
+                            : agentSes.status === 'done'   ? '✅ Agent done'
+                            : '⏸️ Blocked';
+          agentHtml = `<div class="agent-badge">
+            <div class="agent-dot ${agentSes.status}"></div>
+            <span class="agent-label ${agentSes.status}">${statusLabel} · ${agentSes.since}</span>
+          </div>`;
+        }
+        return `<div class="kanban-card ${isDone ? 'done' : ''}" onclick="toggleCard('${t.id}')">
+          <input type="checkbox" ${isDone ? 'checked' : ''}
+            onclick="event.stopPropagation(); toggleCard('${t.id}')" />
+          <div class="kanban-card-body">
+            <div class="kanban-card-text">${t.text}</div>
+            <span class="kanban-tag tag-${t.tag}">${TAG_LABELS[t.tag]}</span>
+            ${agentHtml}
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    document.getElementById('kanban-board').innerHTML = `
+      <div>
+        <div class="kanban-col-header must">
+          ⬥ Must Do <span class="col-count">${must.filter(t=>!done.has(t.id)).length}/${must.length}</span>
+        </div>
+        ${buildCards(must)}
+      </div>
+      <div>
+        <div class="kanban-col-header should">
+          ⬥ Should Do <span class="col-count">${should.filter(t=>!done.has(t.id)).length}/${should.length}</span>
+        </div>
+        ${buildCards(should)}
+      </div>
+      <div>
+        <div class="kanban-col-header could">
+          ⬥ Could Do <span class="col-count">${could.filter(t=>!done.has(t.id)).length}/${could.length}</span>
+        </div>
+        ${buildCards(could)}
+      </div>`;
+  }
+
+  // ═══════════════════════════════════════════
+  // SOCIAL QUEUE RENDERING
+  // ═══════════════════════════════════════════
+  function renderSocialQueue() {
+    const el    = document.getElementById('social-queue-content');
+    const badge = document.getElementById('social-queue-badge');
+    const drafts = SOCIAL_QUEUE.filter(p => p.status === 'draft');
+    badge.textContent = drafts.length ? drafts.length + ' ready to post' : 'all clear';
+
+    if (!SOCIAL_QUEUE.length) {
+      el.innerHTML = '<div class="social-empty">No drafts yet — domain agents write here at session closeout.</div>';
+      return;
+    }
+    el.innerHTML = SOCIAL_QUEUE.map(p => {
+      const statusCls = p.status === 'posted' ? 'posted' : 'draft';
+      const statusTxt = p.status === 'posted' ? '✅ Posted' : '📝 Draft';
+      return `<div class="social-card">
+        <div class="social-meta">
+          <span class="social-persona">${p.persona}</span>
+          <span class="social-date">${p.date}</span>
+        </div>
+        <div class="social-draft">${p.draft}</div>
+        <span class="social-status-badge ${statusCls}">${statusTxt}</span>
+        <span class="kanban-tag tag-${p.tag}" style="margin-left:6px">${TAG_LABELS[p.tag] || p.tag}</span>
+      </div>`;
+    }).join('');
+  }
+
+  // ═══════════════════════════════════════════
+  // ACTIVE AGENTS RENDERING
+  // ═══════════════════════════════════════════
+  function renderAgentSessions() {
+    const el    = document.getElementById('agent-sessions-content');
+    const badge = document.getElementById('agent-sessions-badge');
+    const active = AGENT_SESSIONS.filter(a => a.status === 'active');
+    badge.textContent = active.length ? active.length + ' running' : 'none dispatched';
+
+    if (!AGENT_SESSIONS.length) {
+      el.innerHTML = '<div class="social-empty">No active sessions — Fred dispatches agents from here.</div>';
+      return;
+    }
+    el.innerHTML = AGENT_SESSIONS.map(a => {
+      const statusLabel = a.status === 'active'  ? '🔄 In progress'
+                        : a.status === 'done'    ? '✅ Done'
+                        : '⏸️ Blocked';
+      const dotCls = a.status;
+      return `<div class="social-card">
+        <div class="social-meta">
+          <div class="agent-badge" style="margin:0">
+            <div class="agent-dot ${dotCls}"></div>
+            <span class="agent-label ${dotCls}" style="font-size:11px;font-weight:600">${statusLabel}</span>
+          </div>
+          <span class="social-date">${a.since}</span>
+        </div>
+        <div style="font-size:12px;color:var(--text);margin-bottom:6px">${a.task}</div>
+        <span class="kanban-tag tag-${a.tag}">${TAG_LABELS[a.tag] || a.tag}</span>
+      </div>`;
+    }).join('');
+  }
+
+  window.toggleCard = function(id) {
+    const done = getDone();
+    done.has(id) ? done.delete(id) : done.add(id);
+    saveDone(done);
+    renderKanban();
+  };
+
+  // ═══════════════════════════════════════════
+  // GOOGLE CALENDAR INTEGRATION
+  // ═══════════════════════════════════════════
+  function initCalendar() {
+    const content = document.getElementById('calendar-content');
+    const authBtn = document.getElementById('cal-auth-btn');
+
+    if (!IS_CAL_CONFIGURED) {
+      authBtn.style.display = 'none';
+      content.innerHTML = `
+        <div class="cal-setup-box">
+          <div class="cal-setup-title">Setup required to connect Google Calendar</div>
+          <ol class="cal-setup-steps">
+            <li>Go to <code>console.cloud.google.com</code></li>
+            <li>Create project → Enable <code>Google Calendar API</code></li>
+            <li>OAuth consent screen → add your email as test user</li>
+            <li>Credentials → Create OAuth2 Client ID (Web app)<br>
+                JS origin: <code>https://clintryan.github.io</code></li>
+            <li>Paste Client ID into <code>GOOGLE_CLIENT_ID</code> in dashboard.html</li>
+          </ol>
+        </div>
+        <div class="cal-empty">Calendar not connected</div>`;
+      return;
+    }
+
+    content.innerHTML = '<div class="cal-loading">Click "Connect Calendar" to load events</div>';
+
+    // Init GIS token client (may need to wait for GIS to load)
+    function tryInitGIS() {
+      if (window.google && window.google.accounts) {
+        tokenClient = google.accounts.oauth2.initTokenClient({
+          client_id: GOOGLE_CLIENT_ID,
+          scope: 'https://www.googleapis.com/auth/calendar.readonly',
+          callback: async (resp) => {
+            if (resp.error) {
+              content.innerHTML = `<div class="cal-loading">Auth error: ${resp.error}</div>`;
+              return;
+            }
+            calAccessToken = resp.access_token;
+            authBtn.textContent = '✓ Connected';
+            authBtn.classList.add('connected');
+            await fetchAllCalendarEvents();
+          }
+        });
+      } else {
+        setTimeout(tryInitGIS, 500);
+      }
+    }
+    tryInitGIS();
+  }
+
+  window.handleCalAuth = function() {
+    if (!IS_CAL_CONFIGURED) return;
+    if (calAccessToken) {
+      // Already connected — re-fetch
+      fetchAllCalendarEvents();
+    } else if (tokenClient) {
+      tokenClient.requestAccessToken();
+    }
+  };
+
+  async function fetchAllCalendarEvents() {
+    const content = document.getElementById('calendar-content');
+    content.innerHTML = '<div class="cal-loading">Fetching events…</div>';
+
+    const now      = new Date();
+    const twoWeeks = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
+    const timeMin  = now.toISOString();
+    const timeMax  = twoWeeks.toISOString();
+
+    allCalEvents = [];
+
+    for (const src of CALENDAR_SOURCES) {
+      try {
+        const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(src.id)}/events`
+          + `?timeMin=${timeMin}&timeMax=${timeMax}&singleEvents=true&orderBy=startTime&maxResults=50`;
+        const res = await fetch(url, {
+          headers: { Authorization: `Bearer ${calAccessToken}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          allCalEvents.push(
+            ...(data.items || []).map(e => ({ ...e, _calTag: src.tag, _calColor: src.color }))
+          );
+        }
+      } catch (err) {
+        console.warn('Calendar fetch failed for', src.id, err);
+      }
+    }
+
+    // Sort by start time
+    allCalEvents.sort((a, b) => {
+      const da = new Date(a.start.dateTime || a.start.date + 'T00:00:00');
+      const db = new Date(b.start.dateTime || b.start.date + 'T00:00:00');
+      return da - db;
+    });
+
+    renderCalendarView();
+  }
+
+  function renderCalendarView() {
+    const content = document.getElementById('calendar-content');
+    if (!calAccessToken) return; // Not connected yet — leave placeholder
+
+    const persona = PERSONAS[currentPersona];
+    const filtered = persona.tag
+      ? allCalEvents.filter(e => e._calTag === persona.tag)
+      : allCalEvents;
+
+    if (!filtered.length) {
+      content.innerHTML = '<div class="cal-empty">No events in the next 14 days</div>';
+      return;
+    }
+
+    // Group by date
+    const groups = new Map();
+    for (const ev of filtered) {
+      const dt = new Date(ev.start.dateTime || ev.start.date + 'T00:00:00');
+      const key = dt.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push({ ev, dt });
+    }
+
+    let html = '';
+    for (const [day, items] of groups) {
+      html += `<div class="cal-day-group"><div class="cal-day-label">${day}</div>`;
+      for (const { ev, dt } of items) {
+        const isAllDay = !ev.start.dateTime;
+        const timeStr  = isAllDay
+          ? 'All day'
+          : dt.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit', hour12:true });
+        html += `<div class="cal-event">
+          <div class="cal-dot" style="background:${ev._calColor}"></div>
+          <div>
+            <div class="cal-event-title">${ev.summary || '(no title)'}</div>
+            <div class="cal-event-time">${timeStr}${ev.location ? ' · ' + ev.location : ''}</div>
+          </div>
+        </div>`;
+      }
+      html += '</div>';
+    }
+
+    content.innerHTML = html;
+  }
+
+  // ── Friday Fix Work Log
+  function renderFridayFixLog() {
+    const el = document.getElementById('friday-fix-log-content');
+    if (!el) return;
+    const STATUS_COLOR = { done: '#10B981', pending: '#F59E0B', blocked: '#F43F5E' };
+    const TYPE_COLOR   = { decision: '#A78BFA', task: '#00D4FF', idea: '#F59E0B' };
+    el.innerHTML = FRIDAY_FIX_LOG.map(entry => {
+      const sc = STATUS_COLOR[entry.status] || '#64748B';
+      const tc = TYPE_COLOR[entry.type] || '#64748B';
+      return `
+        <div style="padding:12px 0;border-bottom:1px solid var(--border);display:flex;gap:16px;align-items:flex-start;">
+          <div style="flex-shrink:0;width:80px;font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace;padding-top:3px;">${entry.date}</div>
+          <div style="flex:1;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap;">
+              <span style="font-size:9px;font-weight:700;letter-spacing:0.1em;color:${tc};background:${tc}22;padding:2px 7px;border-radius:3px;">${entry.type.toUpperCase()}</span>
+              <span style="font-size:9px;font-weight:700;letter-spacing:0.1em;color:${sc};background:${sc}22;padding:2px 7px;border-radius:3px;">${entry.status.toUpperCase()}</span>
+            </div>
+            <div style="font-size:12px;color:var(--text);line-height:1.6;">${entry.text}</div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  // ── Build Log
+  const TYPE_COLORS = {
+    automation: '#00D4FF',
+    feature:    '#A78BFA',
+    infra:      '#F59E0B',
+    fix:        '#F43F5E',
+  };
+  const TYPE_LABELS = {
+    automation: 'AUTOMATION',
+    feature:    'FEATURE',
+    infra:      'INFRA',
+    fix:        'FIX',
+  };
+
+  function renderBuildLog() {
+    const el = document.getElementById('build-log-content');
+    if (!el) return;
+    if (!BUILD_LOG.length) {
+      el.innerHTML = '<p style="color:var(--text-muted);padding:16px 0;font-size:12px;">No entries yet.</p>';
+      return;
+    }
+    el.innerHTML = BUILD_LOG.map(entry => {
+      const color = TYPE_COLORS[entry.type] || '#64748B';
+      const label = TYPE_LABELS[entry.type] || entry.type.toUpperCase();
+      const tagLabel = TAG_LABELS[entry.tag] || entry.tag;
+      return `
+        <div style="padding:14px 0;border-bottom:1px solid var(--border);display:flex;gap:16px;align-items:flex-start;">
+          <div style="flex-shrink:0;width:80px;font-size:10px;color:var(--text-muted);font-family:'Space Mono',monospace;padding-top:3px;">${entry.date}</div>
+          <div style="flex:1;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap;">
+              <span style="font-size:13px;font-weight:600;color:var(--text);">${entry.title}</span>
+              <span style="font-size:9px;font-weight:700;letter-spacing:0.1em;color:${color};background:${color}22;padding:2px 7px;border-radius:3px;">${label}</span>
+              <span style="font-size:9px;font-weight:600;letter-spacing:0.08em;color:var(--text-muted);background:var(--surface2);padding:2px 7px;border-radius:3px;">${tagLabel}</span>
+            </div>
+            <div style="font-size:12px;color:var(--text-muted);line-height:1.6;">${entry.description}</div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function renderRoadmap() {
+    const el = document.getElementById('roadmap-content');
+    if (!el) return;
+    const STATUS_COLOR  = { active: '#0A5CFF', queued: '#F59E0B', planned: '#64748B', vision: '#8B5CF6' };
+    const STATUS_LABEL  = { active: 'ACTIVE', queued: 'QUEUED', planned: 'PLANNED', vision: 'VISION' };
+    el.innerHTML = ROADMAP.map(item => {
+      const sc = STATUS_COLOR[item.status] || '#64748B';
+      const sl = STATUS_LABEL[item.status] || item.status.toUpperCase();
+      const branchHtml = item.branch
+        ? `<span style="font-size:10px;font-family:'Space Mono',monospace;color:var(--text-muted);background:var(--surface2);padding:2px 8px;border-radius:3px;">${item.branch}</span>`
+        : '';
+      return `
+        <div style="padding:14px 0;border-bottom:1px solid var(--border);display:flex;gap:16px;align-items:flex-start;">
+          <div style="flex-shrink:0;width:48px;text-align:center;">
+            <div style="font-size:11px;font-weight:700;font-family:'Space Mono',monospace;color:${sc};background:${sc}22;padding:4px 6px;border-radius:5px;letter-spacing:0.05em;">P${item.phase}</div>
+          </div>
+          <div style="flex:1;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap;">
+              <span style="font-size:13px;font-weight:600;color:var(--text);">${item.title}</span>
+              <span style="font-size:9px;font-weight:700;letter-spacing:0.1em;color:${sc};background:${sc}22;padding:2px 7px;border-radius:3px;">${sl}</span>
+              <span style="font-size:9px;font-weight:600;color:var(--text-muted);">${item.target}</span>
+              ${branchHtml}
+            </div>
+            <div style="font-size:12px;color:var(--text-muted);line-height:1.6;">${item.description}</div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  // ── Boot
+  renderKPI();
+  renderKanban();
+  initCalendar();
+  renderRoadmap();
+  renderFridayFixLog();
+  renderBuildLog();
+  renderSocialQueue();
+  renderAgentSessions();
+
+</script>
+</body>
+</html>
