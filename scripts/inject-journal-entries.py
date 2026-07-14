@@ -122,32 +122,39 @@ def inject_into_static_ts(entries: list) -> None:
 
     new_entries_block = build_typescript_entries(entries)
 
-    # Check if JOURNAL_ENTRIES already exists
-    pattern = r"\/\* ── Journal Entries .*?\n(?:export const JOURNAL_ENTRIES:.*?\n\];)"
-    match = re.search(pattern, src, re.DOTALL)
+    # Find and replace existing JOURNAL_ENTRIES section
+    start_marker = "export const JOURNAL_ENTRIES: JournalEntry[] = ["
+    end_marker = "\n]"
 
-    if match:
-        # Replace existing block (avoid backslash issues)
-        src = src[:match.start()] + new_entries_block + src[match.end():]
-    else:
-        # Append after ROADMAP block using string search instead of regex
-        roadmap_end = src.rfind("export const ROADMAP:")
-        if roadmap_end != -1:
-            # Find the closing bracket
-            bracket_count = 0
-            found_start = False
-            for i in range(roadmap_end, len(src)):
-                if src[i] == '[':
-                    found_start = True
-                    bracket_count += 1
-                elif src[i] == ']' and found_start:
-                    bracket_count -= 1
-                    if bracket_count == 0:
-                        insert_pos = i + 1
-                        src = src[:insert_pos] + "\n\n" + new_entries_block + src[insert_pos:]
-                        break
+    start_idx = src.find(start_marker)
+    if start_idx != -1:
+        # Find the closing ] on a new line
+        search_start = start_idx + len(start_marker)
+        bracket_count = 1
+        i = search_start
+        while i < len(src) and bracket_count > 0:
+            if src[i] == '[':
+                bracket_count += 1
+            elif src[i] == ']':
+                bracket_count -= 1
+            i += 1
+
+        if bracket_count == 0:
+            end_idx = i  # Position after the closing ]
+            # Replace from start marker to closing bracket
+            replacement = start_marker + "\n" + "  " + new_entries_block.replace("\nexport const JOURNAL_ENTRIES: JournalEntry[] = [\n", "").rstrip() + "\n]"
+            src = src[:start_idx] + replacement + src[end_idx:]
         else:
-            # Last resort: append before PERSONAS config
+            # Fallback: append before PERSONAS
+            personas_idx = src.find("\n/* ── Persona config ── */")
+            if personas_idx != -1:
+                src = src[:personas_idx] + "\n\n" + new_entries_block + src[personas_idx:]
+    else:
+        # JOURNAL_ENTRIES not found, append before PERSONAS
+        personas_idx = src.find("\n/* ── Persona config ── */")
+        if personas_idx != -1:
+            src = src[:personas_idx] + "\n\n" + new_entries_block + src[personas_idx:]
+        else:
             src = src.rstrip() + "\n\n" + new_entries_block + "\n"
 
     STATIC_TS.write_text(src, encoding="utf-8")
