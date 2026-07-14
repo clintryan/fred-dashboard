@@ -131,7 +131,7 @@ export const ROADMAP: RoadmapItem[] = [
 
 /* ── Journal Entries — parsed from journal.jsonl for entry detail pages ── */
 export const JOURNAL_ENTRIES: JournalEntry[] = [
-  {
+  /* ── Journal Entries — parsed from journal.jsonl for entry detail pages ── */  {
     ts: "2026-07-15T06:06:00+07:00",
     run_id: "openclaw-20260715-chalk-workflow",
     harness: "openclaw",

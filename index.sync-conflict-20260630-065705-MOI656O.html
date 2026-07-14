@@ -500,77 +500,6 @@
       .kpi-row { grid-template-columns: 1fr; }
       .footer { flex-direction: column; gap: 6px; text-align: center; }
     }
-    /* ── Attention Banner ─────────────────────── */
-    .attention-banner {
-      background: rgba(244, 63, 94, 0.08);
-      border: 1px solid rgba(244, 63, 94, 0.25);
-      border-left: 3px solid #F43F5E;
-      border-radius: 8px;
-      padding: 12px 16px;
-      margin-bottom: 16px;
-    }
-    .attention-banner-header {
-      font-family: 'Space Mono', monospace;
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: .1em;
-      text-transform: uppercase;
-      color: #F43F5E;
-      margin-bottom: 10px;
-    }
-    .attention-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      padding: 8px 0;
-      border-bottom: 1px solid rgba(244, 63, 94, 0.1);
-      font-size: 12px;
-    }
-    .attention-item:last-child { border-bottom: none; }
-    .attention-persona {
-      font-weight: 700;
-      font-size: 11px;
-      white-space: nowrap;
-      padding: 2px 7px;
-      border-radius: 4px;
-      font-family: 'Space Mono', monospace;
-    }
-    .attention-prompt { color: var(--text); flex: 1; }
-    .attention-time   { font-size: 10px; color: var(--text-muted); white-space: nowrap; font-family: 'Space Mono', monospace; }
-
-    /* ── Activity Log ───────────────────────── */
-    .activity-row {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      padding: 10px 0;
-      border-bottom: 1px solid var(--border);
-      font-size: 12px;
-    }
-    .activity-row:last-child { border-bottom: none; }
-    .activity-ts   { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--text-muted); min-width: 42px; margin-top: 1px; }
-    .activity-body { flex: 1; min-width: 0; }
-    .activity-top  { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; margin-bottom: 3px; }
-    .activity-prompt {
-      color: var(--text);
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-      max-width: 500px;
-    }
-    .activity-summary { color: var(--text-muted); font-size: 11px; margin-top: 2px; }
-    .act-badge {
-      font-size: 9px; font-weight: 700; letter-spacing: .06em;
-      text-transform: uppercase; padding: 2px 6px; border-radius: 3px;
-    }
-    .act-done    { background: rgba(16,185,129,.15); color: #10B981; }
-    .act-partial { background: rgba(245,158,11,.12); color: #F59E0B; }
-    .act-blocked { background: rgba(244,63,94,.12);  color: #F43F5E; }
-    .activity-date-header {
-      font-family: 'Space Mono', monospace;
-      font-size: 10px; font-weight: 700; letter-spacing: .08em;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      padding: 10px 0 4px;
-    }
   </style>
 </head>
 <body>
@@ -692,21 +621,6 @@
     // { id: 'worksheet-html', task: 'Worksheet generator — local HTML', tag: 'fluentrx', status: 'active', since: '2026-04-08', todoId: 'welcome-seq' },
   ];
 
-  /* ── Activity Log — auto-injected by tools/update-fred-dashboard.py
-     DO NOT EDIT MANUALLY. Updated after each agent session ends (Stop hook).
-     Open this file and refresh to see latest activity — no server needed.
-  */
-  <!--ACTIVITY_LOG_START-->
-  const ACTIVITY_LOG = [
-    {"ts":"2026-07-09T15:30:00+07:00","project":"workspace","persona":"Fred","tag":"fred","last_prompt":"Consolidated 6+ parallel logging/closeout mechanisms into ONE canonical journal: journal.jsonl (append-only) + tools/journal.py (only writer/renderer) + generated JOURNAL.md. Archived build-log.md, se","summary":"Consolidated 6+ parallel logging/closeout mechanisms into ONE canonical journal: journal.jsonl (append-only) + tools/journal.py (only writer/renderer) + generated JOURNAL.md. Archived build-log.md, se","status":"done","followups":["Clint runs the commit command on his Mac", "rm the 3 sandbox leftover files listed in the report"],"machine":"cowork","bash_count":0,"files_changed":["tools/journal.py", "fred/Mission-Control/journal/journal.jsonl", "fred/Mission-Control/journal/README.md", "fred/AGENTS.md", "fred/Mission-Control/STARTUP.md", ".claude/skills/close/SKILL.md", ".claude/settings.json"]},
-    {"ts":"2026-07-09T08:06:41+07:00","project":"workspace","persona":"Fred","tag":"fred","last_prompt":"Built the agent-surface Google Doc mirror layer (agent-surfaces.md registry + render-agent-surface.py + sync-doc-to-drive.py hook). Reasonable READ surface, but was added as yet another layer without ","summary":"Built the agent-surface Google Doc mirror layer (agent-surfaces.md registry + render-agent-surface.py + sync-doc-to-drive.py hook). Reasonable READ surface, but was added as yet another layer without ","status":"partial","followups":["Consolidate all logging/closeout into ONE canonical mechanism"],"machine":"air","bash_count":0,"files_changed":["fred/Mission-Control/agent-surfaces.md", "tools/render-agent-surface.py", "tools/sync-doc-to-drive.py"]},
-    {"ts":"2026-07-02T17:00:00+07:00","project":"BCC","persona":"Isosceles","tag":"teacher","last_prompt":"Built Match Day Hunt 4.3 station-rotation review (9 stations + 2 bonus, 6 group routes, teacher key). Dropped invented match-history framing per Clint; used labelled hypotheticals + real class-list co","summary":"Built Match Day Hunt 4.3 station-rotation review (9 stations + 2 bonus, 6 group routes, teacher key). Dropped invented match-history framing per Clint; used labelled hypotheticals + real class-list co","status":"done","followups":[],"machine":"air","bash_count":0,"files_changed":["4.3-matchday-hunt.html", "4.3-matchday-hunt-teacher-instructions.html"]},
-    {"ts":"2026-07-01T19:00:00+07:00","project":"workspace","persona":"Fred","tag":"fred","last_prompt":"Fixed silently-broken session-events auto-logger (wrote to ephemeral sandbox ~/.command-log; hook used a Mac-absolute path that can't launch in Cowork). Archived 8 orphaned Mission-Control files; adde","summary":"Fixed silently-broken session-events auto-logger (wrote to ephemeral sandbox ~/.command-log; hook used a Mac-absolute path that can't launch in Cowork). Archived 8 orphaned Mission-Control files; adde","status":"done","followups":[],"machine":"air","bash_count":0,"files_changed":["tools/log-event.py", ".claude/settings.json", "fred/Mission-Control/INVENTORY.md"]},
-    {"ts":"2026-06-29T17:00:00+07:00","project":"BCC","persona":"Isosceles","tag":"teacher","last_prompt":"Rewrote 4.3 assignment on theme->worked->guided->bridge spine; cross-checked all 10 answers vs stats1-answers.pdf (9 matched, Q2 method deviation logged); flagged invented athlete stats. validate-bcc-","summary":"Rewrote 4.3 assignment on theme->worked->guided->bridge spine; cross-checked all 10 answers vs stats1-answers.pdf (9 matched, Q2 method deviation logged); flagged invented athlete stats. validate-bcc-","status":"done","followups":["PDF visual verification of Q2/Q9/Q10 on Clint's Mac (no Chrome in sandbox)"],"machine":"air","bash_count":0,"files_changed":["ASSIGNMENT-PROCESS.md"]},
-    {"ts":"2026-06-28T18:00:00+07:00","project":"Chalk","persona":"Isosceles","tag":"teacher","last_prompt":"Cover Finder demo-prep pass: hardened merge_duplicate_teachers, added one-click auto-fill-the-day, polished Teacher Directory + Day Summary print, optional demo-data seed. Built, uncommitted — awaitin","summary":"Cover Finder demo-prep pass: hardened merge_duplicate_teachers, added one-click auto-fill-the-day, polished Teacher Directory + Day Summary print, optional demo-data seed. Built, uncommitted — awaitin","status":"partial","followups":["Review/commit/push/run on Clint's Mac before demo"],"machine":"air","bash_count":0,"files_changed":["specs/duplicate-merge-run-checklist-2026-06-28.md", "db/seeds/demo_cover_history.rb"]},
-  ];
-  <!--ACTIVITY_LOG_END-->
-
   /* ── Social Queue
      ⚠️  DO NOT EDIT MANUALLY.
      Synced from Mission-Control/social-queue.md by Fred at session start.
@@ -745,11 +659,11 @@
   */
   const BUILD_LOG = [
     {
-      date:        "2026-06-04",
-      title:       "M4 Project Idea Bank Reorganized + Language Cleanup",
-      description: "Reorganized the Project Idea Bank (36 cards) from topic-based sections into four data-collection-method sections aligned with the course scope: Observe & Count (11), Survey & Ask (7), Log & Track (8), Find & Download (10). Each section header includes a course-phase hint for the Data Plan week. Renamed 'Small test:' → 'Scope:' across all 36 cards — it's a scope boundary, not a quiz. Matching cleanup on the Initial Project Idea Sheet: removed 'test' from the output-type list and removed 'small' from the final-output heading.",
-      type:        "classroom",
-      tag:         "teacher"
+      date:        "2026-05-25",
+      title:       "Legacy FluentRx Drive-Watch Cleanup",
+      description: "Disabled and removed the legacy macOS launch agent com.fluentrx.drive-watch-renew, which was still trying to run the old Google Drive/Tactiq watch renewal script every 45 minutes. Verified the live launchd job, disabled it so it stays off, deleted the LaunchAgents plist after approval, and confirmed both that the plist file is gone and launchd still marks the label disabled. This should stop the recurring missing-config noise from a pipeline Clint no longer uses.",
+      type:        "ops",
+      tag:         "fluentrx"
     },
     {
       date:        "2026-05-22",
@@ -1199,9 +1113,6 @@
   <!-- KPI ROW (rendered dynamically per tab) -->
   <div class="kpi-row" id="kpi-row"></div>
 
-  <!-- AGENT ATTENTION BANNER — shown only when agents need input -->
-  <div id="attention-banner" style="display:none"></div>
-
   <!-- BODY: Kanban + Calendar -->
   <div class="body-grid">
 
@@ -1275,15 +1186,6 @@
     <div id="build-log-content"></div>
   </div>
 
-  <!-- AGENT ACTIVITY LOG -->
-  <div class="panel" style="margin-top:0;">
-    <div class="section-header">
-      <div class="section-title">Agent Activity Log</div>
-      <div class="section-badge" id="activity-log-badge">auto-captured · refresh to update</div>
-    </div>
-    <div id="activity-log-content"></div>
-  </div>
-
 </div><!-- /main -->
 
 <!-- FOOTER -->
@@ -1341,9 +1243,6 @@
       renderKPI();
       renderKanban();
       renderCalendarView();
-      renderAttentionBanner();
-      renderAgentSessions();
-      renderAgentActivity();
     });
   });
 
@@ -1529,116 +1428,6 @@
   }
 
   // ═══════════════════════════════════════════
-  // ACTIVITY LOG + ATTENTION HELPERS
-  // ═══════════════════════════════════════════
-  const PROJECT_PERSONA = {
-    'BCC':        { label: 'Isosceles',  tag: 'teacher'  },
-    'Chalk':      { label: 'Isosceles',  tag: 'teacher'  },
-    'FluentRx':   { label: 'Fred',       tag: 'fluentrx' },
-    'CoderClint': { label: 'CoderClint', tag: 'coder'    },
-    'Marketing':  { label: 'Fred',       tag: 'fluentrx' },
-    'Marvin':     { label: 'Marvin',     tag: 'fred'     },
-    'workspace':  { label: 'Fred',       tag: 'fred'     },
-  };
-
-  function personaFor(project) {
-    return PROJECT_PERSONA[project] || { label: project || 'Fred', tag: 'fred' };
-  }
-
-  function actTs(ts) {
-    try { return new Date(ts).toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' }); }
-    catch { return '?'; }
-  }
-  function actDate(ts) {
-    try { return new Date(ts).toLocaleDateString('en-GB', { weekday:'short', month:'short', day:'numeric' }); }
-    catch { return '?'; }
-  }
-
-  function activityFilteredToPersona(log) {
-    if (currentPersona === 'all') return log;
-    return log.filter(e => e.tag === currentPersona ||
-      (currentPersona === 'coder' && e.project === 'CoderClint'));
-  }
-
-  function renderAttentionBanner() {
-    const el = document.getElementById('attention-banner');
-    const needs = ACTIVITY_LOG.filter(e =>
-      e.status === 'blocked' || e.status === 'partial' ||
-      (e.followups && e.followups.length)
-    ).slice(0, 8);
-
-    if (!needs.length) { el.style.display = 'none'; return; }
-    el.style.display = 'block';
-
-    const items = needs.map(e => {
-      const p   = personaFor(e.project);
-      const col = PERSONAS[p.tag]?.color || '#64748B';
-      const prompt = e.last_prompt || e.summary || '(no prompt recorded)';
-      const fups = (e.followups || []).length
-        ? `<div style="font-size:10px;color:#F59E0B;margin-top:3px">↳ ${e.followups.join(' · ')}</div>` : '';
-      return `<div class="attention-item">
-        <span class="attention-persona" style="background:${col}22;color:${col}">${p.label}</span>
-        <div class="attention-prompt">${prompt.slice(0, 120)}<br>${fups}</div>
-        <span class="attention-time">${actDate(e.ts)}</span>
-      </div>`;
-    }).join('');
-
-    el.innerHTML = `<div class="attention-banner">
-      <div class="attention-banner-header">⚠ Needs Your Attention &nbsp;·&nbsp; ${needs.length} item${needs.length > 1 ? 's' : ''}</div>
-      ${items}
-    </div>`;
-  }
-
-  function renderAgentActivity() {
-    const el    = document.getElementById('activity-log-content');
-    const badge = document.getElementById('activity-log-badge');
-    const log   = activityFilteredToPersona(ACTIVITY_LOG);
-
-    if (!log.length) {
-      badge.textContent = 'no sessions recorded yet';
-      el.innerHTML = '<div class="social-empty">No activity yet — sessions are captured automatically via the Stop hook.</div>';
-      return;
-    }
-    badge.textContent = log.length + ' session' + (log.length > 1 ? 's' : '') + ' · refresh to update';
-
-    // Group by date
-    const byDate = {};
-    log.forEach(e => {
-      const d = (e.ts || '').slice(0, 10) || 'unknown';
-      (byDate[d] = byDate[d] || []).push(e);
-    });
-
-    const html = Object.entries(byDate)
-      .sort((a, b) => b[0].localeCompare(a[0]))
-      .slice(0, 14)  // limit to 14 days shown
-      .map(([date, entries]) => {
-        const rows = entries.map(e => {
-          const p      = personaFor(e.project);
-          const col    = PERSONAS[p.tag]?.color || '#64748B';
-          const stCls  = e.status === 'done' ? 'act-done' : e.status === 'blocked' ? 'act-blocked' : 'act-partial';
-          const prompt = e.last_prompt || e.summary || '(no prompt)';
-          const files  = (e.files_changed || []).slice(0, 3).map(f => f.split('/').pop()).join(', ');
-          const filesTxt = files ? `<span style="color:var(--text-muted);font-size:10px"> · ${files}${(e.files_changed||[]).length > 3 ? ` +${(e.files_changed||[]).length-3}` : ''}</span>` : '';
-          return `<div class="activity-row">
-            <div class="activity-ts">${actTs(e.ts)}</div>
-            <div class="activity-body">
-              <div class="activity-top">
-                <span style="font-size:10px;font-weight:700;font-family:'Space Mono',monospace;color:${col}">${p.label}</span>
-                <span class="act-badge ${stCls}">${e.status}</span>
-                ${e.machine && e.machine !== 'air' ? `<span class="act-badge act-partial" style="background:transparent;border:1px solid var(--border)">${e.machine}</span>` : ''}
-              </div>
-              <div class="activity-prompt">${prompt.slice(0, 140)}</div>
-              ${e.summary ? `<div class="activity-summary">${e.summary}${filesTxt}</div>` : ''}
-            </div>
-          </div>`;
-        }).join('');
-        return `<div class="activity-date-header">${date}</div>${rows}`;
-      }).join('');
-
-    el.innerHTML = html;
-  }
-
-  // ═══════════════════════════════════════════
   // SOCIAL QUEUE RENDERING
   // ═══════════════════════════════════════════
   function renderSocialQueue() {
@@ -1672,39 +1461,28 @@
   function renderAgentSessions() {
     const el    = document.getElementById('agent-sessions-content');
     const badge = document.getElementById('agent-sessions-badge');
+    const active = AGENT_SESSIONS.filter(a => a.status === 'active');
+    badge.textContent = active.length ? active.length + ' running' : 'none dispatched';
 
-    // Pull from live ACTIVITY_LOG — one card per persona, most recent session first
-    const byPersona = {};
-    ACTIVITY_LOG.forEach(e => {
-      const key = e.persona || e.project || 'Fred';
-      if (!byPersona[key]) byPersona[key] = e;
-    });
-    const sessions = Object.values(byPersona);
-
-    if (!sessions.length) {
-      badge.textContent = 'none recorded yet';
-      el.innerHTML = '<div class="social-empty">No agent sessions yet — captured automatically via Stop hook.</div>';
+    if (!AGENT_SESSIONS.length) {
+      el.innerHTML = '<div class="social-empty">No active sessions — Fred dispatches agents from here.</div>';
       return;
     }
-
-    const needsAttn = sessions.filter(s => s.status === 'blocked' || s.status === 'partial').length;
-    badge.textContent = needsAttn ? needsAttn + ' need' + (needsAttn > 1 ? '' : 's') + ' attention' : sessions.length + ' persona' + (sessions.length > 1 ? 's' : '') + ' active';
-
-    el.innerHTML = sessions.map(e => {
-      const p      = personaFor(e.project);
-      const col    = PERSONAS[p.tag]?.color || '#64748B';
-      const stCls  = e.status === 'done' ? 'act-done' : e.status === 'blocked' ? 'act-blocked' : 'act-partial';
-      const stIcon = e.status === 'done' ? '✓' : e.status === 'blocked' ? '✗' : '~';
-      const prompt = e.last_prompt || e.summary || '(no prompt recorded)';
-      return `<div class="social-card" style="${e.status === 'blocked' ? 'border-left:2px solid #F43F5E' : e.status === 'partial' ? 'border-left:2px solid #F59E0B' : ''}">
+    el.innerHTML = AGENT_SESSIONS.map(a => {
+      const statusLabel = a.status === 'active'  ? '🔄 In progress'
+                        : a.status === 'done'    ? '✅ Done'
+                        : '⏸️ Blocked';
+      const dotCls = a.status;
+      return `<div class="social-card">
         <div class="social-meta">
-          <span style="font-family:'Space Mono',monospace;font-weight:700;font-size:11px;color:${col}">${p.label}</span>
-          <span class="social-date">${actDate(e.ts)}</span>
+          <div class="agent-badge" style="margin:0">
+            <div class="agent-dot ${dotCls}"></div>
+            <span class="agent-label ${dotCls}" style="font-size:11px;font-weight:600">${statusLabel}</span>
+          </div>
+          <span class="social-date">${a.since}</span>
         </div>
-        <div style="font-size:12px;color:var(--text);margin:5px 0 6px">${prompt.slice(0, 100)}</div>
-        <span class="act-badge ${stCls}">${stIcon} ${e.status}</span>
-        <span class="kanban-tag tag-${p.tag}" style="margin-left:6px">${TAG_LABELS[p.tag] || p.tag}</span>
-        ${e.summary ? `<div style="font-size:10px;color:var(--text-muted);margin-top:5px">${e.summary}</div>` : ''}
+        <div style="font-size:12px;color:var(--text);margin-bottom:6px">${a.task}</div>
+        <span class="kanban-tag tag-${a.tag}">${TAG_LABELS[a.tag] || a.tag}</span>
       </div>`;
     }).join('');
   }
@@ -1962,8 +1740,6 @@
   renderBuildLog();
   renderSocialQueue();
   renderAgentSessions();
-  renderAttentionBanner();
-  renderAgentActivity();
 
 </script>
 </body>

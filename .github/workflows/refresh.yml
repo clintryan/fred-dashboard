@@ -1,0 +1,37 @@
+name: Refresh Dashboard Data
+
+on:
+  schedule:
+    - cron: '0 1 * * *'   # 1am UTC daily
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python deps
+        run: pip install stripe requests psycopg2-binary
+
+      - name: Run refresh script
+        env:
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          DATABASE_URL:       ${{ secrets.DATABASE_URL }}
+        run: python scripts/refresh.py
+
+      - name: Commit updated data
+        run: |
+          git config user.name  "Fred Bot"
+          git config user.email "fred-bot@clintryan.github.io"
+          git add src/data/static.ts
+          git diff --cached --quiet || git commit -m "chore: refresh dashboard data [skip ci]"
+          git push

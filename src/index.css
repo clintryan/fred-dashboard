@@ -1,0 +1,62 @@
+/* Fonts loaded via <link> in index.html */
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #0B0F1A;
+  --color-surface: #131929;
+  --color-surface2: #1A2238;
+  --color-border: #1E2D45;
+  --color-border2: #263350;
+  --color-text: #E2E8F0;
+  --color-muted: #64748B;
+  --color-accent: #00D4FF;
+  --color-up: #10B981;
+  --color-down: #F43F5E;
+  --color-warn: #F59E0B;
+  --color-purple: #A78BFA;
+
+  --color-persona-fluentrx: #00D4FF;
+  --color-persona-coder: #A78BFA;
+  --color-persona-teacher: #10B981;
+  --color-persona-trader: #F59E0B;
+  --color-persona-fred: #64748B;
+
+  --font-mono: 'Space Mono', monospace;
+  --font-sans: 'Inter', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: #0B0F1A;
+  color: #E2E8F0;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+:root {
+  --bg: #0B0F1A;
+  --surface: #131929;
+  --surface2: #1A2238;
+  --border: #1E2D45;
+  --border2: #263350;
+  --text: #E2E8F0;
+  --text-muted: #64748B;
+  --accent: #00D4FF;
+  --accent-dim: rgba(0, 212, 255, 0.12);
+  --up: #10B981;
+  --down: #F43F5E;
+  --warn: #F59E0B;
+  --purple: #A78BFA;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: var(--surface); }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
