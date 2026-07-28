@@ -4,6 +4,7 @@ import { PersonaTabs } from '@/components/PersonaTabs'
 import { KpiCards } from '@/components/KpiCards'
 import { KanbanBoard } from '@/components/KanbanBoard'
 import { CalendarPanel } from '@/components/CalendarPanel'
+import { HabitTracker } from '@/components/HabitTracker'
 import { SocialQueue } from '@/components/SocialQueue'
 import { AgentsPanel } from '@/components/AgentsPanel'
 import { ProductRoadmap } from '@/components/ProductRoadmap'
@@ -62,6 +63,11 @@ export default function App() {
         >
           <KanbanBoard persona={persona} />
           <CalendarPanel persona={persona} />
+        </div>
+
+        {/* Personal Habits */}
+        <div className="mb-[18px]">
+          <HabitTracker />
         </div>
 
         {/* Social Queue + Active Agents */}

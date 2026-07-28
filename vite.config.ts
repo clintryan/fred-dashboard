@@ -5,6 +5,18 @@ import path from 'path'
 
 export default defineConfig({
   base: '/fred-dashboard/',
+  server: {
+    proxy: {
+      '/api': 'http://127.0.0.1:8787',
+    },
+  },
+  build: {
+    rollupOptions: {
+      input: {
+        dashboard: path.resolve(__dirname, 'dashboard.html'),
+      },
+    },
+  },
   plugins: [
     tailwindcss(),
     react(),
