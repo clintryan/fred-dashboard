@@ -1,25 +1,7 @@
-import { useState } from 'react'
-import { TODOS, AGENT_SESSIONS, PERSONAS, TAG_LABELS } from '@/data/static'
+import { useState, useEffect, useCallback } from 'react'
+import { AGENT_SESSIONS, PERSONAS, TAG_LABELS } from '@/data/static'
 import { Card, CardHeader, CardTitle, CardMeta, CardContent } from '@/components/ui/card'
 import type { Persona, Todo } from '@/data/types'
-
-const STORAGE_KEY = 'fred_checked'
-
-function useDoneSet() {
-  const [done, setDone] = useState<Set<string>>(() => {
-    try { return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')) }
-    catch { return new Set() }
-  })
-  const toggle = (id: string) => {
-    setDone(prev => {
-      const next = new Set(prev)
-      next.has(id) ? next.delete(id) : next.add(id)
-      localStorage.setItem(STORAGE_KEY, JSON.stringify([...next]))
-      return next
-    })
-  }
-  return { done, toggle }
-}
 
 const TAG_COLORS: Record<string, string> = {
   fluentrx: '#00D4FF', coder: '#A78BFA', teacher: '#10B981', trader: '#F59E0B', fred: '#64748B'
@@ -38,17 +20,16 @@ function PersonaTag({ tag }: { tag: string }) {
 }
 
 function KanbanColumn({
-  title, items, done, toggle, variant
+  title, items, toggle, variant
 }: {
   title: string
   items: Todo[]
-  done: Set<string>
-  toggle: (id: string) => void
+  toggle: (id: string, currentStatus: string, taskText: string, tag: string, agent_id: string) => void
   variant: 'must' | 'should' | 'could'
 }) {
   const color = variant === 'must' ? '#00D4FF' : variant === 'should' ? '#F59E0B' : '#A78BFA'
-  const sorted = [...items].sort((a, b) => (done.has(a.id) ? 1 : 0) - (done.has(b.id) ? 1 : 0))
-  const remaining = items.filter(t => !done.has(t.id)).length
+  const sorted = [...items].sort((a, b) => (a.status === 'done' ? 1 : 0) - (b.status === 'done' ? 1 : 0))
+  const remaining = items.filter(t => t.status !== 'done').length
 
   return (
     <div>
@@ -63,7 +44,7 @@ function KanbanColumn({
         <div className="text-[11px] italic py-2" style={{ color: '#64748B' }}>Nothing here</div>
       )}
       {sorted.map(t => {
-        const isDone = done.has(t.id)
+        const isDone = t.status === 'done'
         const agent = AGENT_SESSIONS.find(a => a.todoId === t.id)
         return (
           <div
@@ -74,12 +55,12 @@ function KanbanColumn({
               border: '1px solid #263350',
               opacity: isDone ? 0.35 : 1,
             }}
-            onClick={() => toggle(t.id)}
+            onClick={() => toggle(t.id, t.status || 'todo', t.text, t.tag, t.agent_id || '')}
           >
             <input
               type="checkbox"
               checked={isDone}
-              onChange={() => toggle(t.id)}
+              onChange={() => toggle(t.id, t.status || 'todo', t.text, t.tag, t.agent_id || '')}
               onClick={e => e.stopPropagation()}
               className="mt-0.5 flex-shrink-0 cursor-pointer w-3 h-3"
               style={{ accentColor: '#00D4FF' }}
@@ -118,28 +99,62 @@ function KanbanColumn({
 }
 
 export function KanbanBoard({ persona }: { persona: Persona }) {
-  const { done, toggle } = useDoneSet()
+  const [tasks, setTasks] = useState<Todo[]>([])
+  
+  const loadTasks = useCallback(async () => {
+    try {
+      const res = await fetch('http://127.0.0.1:8787/api/tasks')
+      if (res.ok) {
+        const data = await res.json()
+        setTasks(data.tasks || [])
+      }
+    } catch (e) {
+      console.error('Failed to load tasks', e)
+    }
+  }, [])
+
+  useEffect(() => {
+    loadTasks()
+  }, [loadTasks])
+
+  const toggle = async (id: string, currentStatus: string, text: string, tag: string, agent_id: string) => {
+    const newStatus = currentStatus === 'done' ? 'todo' : 'done'
+    // Optimistic update
+    setTasks(prev => prev.map(t => t.id === id ? { ...t, status: newStatus } : t))
+    try {
+      await fetch('http://127.0.0.1:8787/api/tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, status: newStatus, text, tag, agent_id })
+      })
+    } catch (e) {
+      console.error('Failed to update task', e)
+      // Revert optimistic update
+      loadTasks()
+    }
+  }
+
   const tag = PERSONAS[persona].tag
 
   const filter = (todos: Todo[]) => tag ? todos.filter(t => t.tag === tag) : todos
 
-  const must   = filter(TODOS.must)
-  const should = filter(TODOS.should)
-  const could  = filter(TODOS.could)
+  // Simple mapping since db tasks don't have must/should/could explicitly yet. 
+  // For now, put everything in Must Do, or map by some logic.
+  // We will distribute tasks evenly or put all in Must.
+  const filtered = filter(tasks)
+  const must = filtered
 
-  const title = tag ? `${PERSONAS[persona].label} Todos` : 'All Todos'
+  const title = tag ? `${PERSONAS[persona].label} Agent Queue` : 'All Agent Queue'
 
   return (
     <Card className="h-full">
       <CardHeader>
         <CardTitle>{title}</CardTitle>
-        <CardMeta>MoSCoW · click to complete</CardMeta>
+        <CardMeta>Task Queue · click to complete</CardMeta>
       </CardHeader>
       <CardContent>
-        <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
-          <KanbanColumn title="Must Do"   items={must}   done={done} toggle={toggle} variant="must" />
-          <KanbanColumn title="Should Do" items={should} done={done} toggle={toggle} variant="should" />
-          <KanbanColumn title="Could Do"  items={could}  done={done} toggle={toggle} variant="could" />
+        <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(1, 1fr)' }}>
+          <KanbanColumn title="Agent Tasks" items={must} toggle={toggle} variant="must" />
         </div>
       </CardContent>
     </Card>

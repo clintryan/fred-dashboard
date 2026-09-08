@@ -11,6 +11,8 @@ export interface Todo {
   id: string
   text: string
   tag: TodoTag
+  status?: string
+  agent_id?: string
 }
 
 export interface AgentSession {

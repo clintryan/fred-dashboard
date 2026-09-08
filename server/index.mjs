@@ -53,6 +53,16 @@ db.exec(`
     reminder_date TEXT PRIMARY KEY,
     sent_at TEXT NOT NULL
   );
+
+  CREATE TABLE IF NOT EXISTS agent_tasks (
+    id TEXT PRIMARY KEY,
+    status TEXT NOT NULL DEFAULT 'todo',
+    text TEXT NOT NULL,
+    tag TEXT NOT NULL,
+    agent_id TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
 `)
 
 const selectEntriesStmt = db.prepare(`
@@ -113,6 +123,23 @@ const reminderMarkStmt = db.prepare(`
   INSERT INTO reminder_state (reminder_date, sent_at)
   VALUES (?, CURRENT_TIMESTAMP)
   ON CONFLICT(reminder_date) DO UPDATE SET sent_at = CURRENT_TIMESTAMP
+`)
+
+const selectTasksStmt = db.prepare(`
+  SELECT id, status, text, tag, agent_id, created_at, updated_at
+  FROM agent_tasks
+  ORDER BY created_at DESC
+`)
+
+const upsertTaskStmt = db.prepare(`
+  INSERT INTO agent_tasks (id, status, text, tag, agent_id, created_at, updated_at)
+  VALUES (@id, @status, @text, @tag, @agent_id, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+  ON CONFLICT(id) DO UPDATE SET
+    status = excluded.status,
+    text = excluded.text,
+    tag = excluded.tag,
+    agent_id = excluded.agent_id,
+    updated_at = CURRENT_TIMESTAMP
 `)
 
 function isoDate(value = new Date()) {
@@ -349,6 +376,29 @@ async function handleRequest(req, res) {
 
       upsertEntryStmt.run(entry)
       sendJson(res, 200, { ok: true, summary: getSummary() })
+    } catch (error) {
+      sendJson(res, 400, { ok: false, error: `Invalid payload: ${error.message}` })
+    }
+    return
+  }
+
+  if (req.method === 'GET' && requestUrl.pathname === '/api/tasks') {
+    const tasks = selectTasksStmt.all()
+    sendJson(res, 200, { tasks })
+    return
+  }
+
+  if (req.method === 'POST' && requestUrl.pathname === '/api/tasks') {
+    try {
+      const payload = await readJson(req)
+      upsertTaskStmt.run({
+        id: payload.id,
+        status: payload.status || 'todo',
+        text: payload.text,
+        tag: payload.tag,
+        agent_id: payload.agent_id || null,
+      })
+      sendJson(res, 200, { ok: true, task: payload })
     } catch (error) {
       sendJson(res, 400, { ok: false, error: `Invalid payload: ${error.message}` })
     }
