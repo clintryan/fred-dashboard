@@ -11,6 +11,8 @@ const rootDir = path.resolve(__dirname, '..')
 loadEnvFile(path.join(rootDir, '.env.local'))
 
 const port = Number(process.env.HABIT_API_PORT || 8787)
+const host = process.env.HABIT_API_HOST || '127.0.0.1'
+const remindersEnabled = process.env.HABIT_REMINDERS_ENABLED === 'true'
 const reminderHour = Number(process.env.HABIT_REMINDER_HOUR || 7)
 const dbPath = path.resolve(rootDir, process.env.HABIT_DB_PATH || './data/habits.sqlite')
 const telegramBotToken = process.env.TELEGRAM_BOT_TOKEN || ''
@@ -251,7 +253,7 @@ function getSummary() {
     },
     rules: getRulesBlurb(),
     reminder: {
-      enabled: Boolean(telegramBotToken && telegramChatId),
+      enabled: remindersEnabled && Boolean(telegramBotToken && telegramChatId),
       hour: reminderHour,
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       preview: buildReminderMessage(today),
@@ -414,14 +416,14 @@ async function handleRequest(req, res) {
   sendJson(res, 404, { error: 'Not found' })
 }
 
-http.createServer((req, res) => {
+const server = http.createServer((req, res) => {
   handleRequest(req, res).catch((error) => {
     console.error('[habit-api] request failed', error)
     sendJson(res, 500, { error: 'Internal server error' })
   })
-}).listen(port, () => {
-  console.log(`[habit-api] listening on http://127.0.0.1:${port}`)
+}).listen(port, host, () => {
+  console.log(`[habit-api] listening on http://${host}:${server.address().port}`)
   console.log(`[habit-api] sqlite db: ${dbPath}`)
 })
 
-scheduleReminderLoop()
+if (remindersEnabled) scheduleReminderLoop()

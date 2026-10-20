@@ -1,8 +1,6 @@
 name: Refresh Dashboard Data
 
 on:
-  schedule:
-    - cron: '0 1 * * *'   # 1am UTC daily
   workflow_dispatch:
 
 permissions:

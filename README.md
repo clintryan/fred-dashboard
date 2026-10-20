@@ -66,3 +66,37 @@ that the local habit service is offline until `npm run server` is running.
 This repo still has a legacy hand-edited `index.html` with local uncommitted
 changes. The MVP intentionally uses `dashboard.html` as the Vite entry so the
 new work can ship without clobbering that file.
+
+## Supervised cloud development
+
+Open this repository in a cloud coding session and read current `main`. The
+**Cloud build and isolated API smoke** workflow runs on code pushes and pull
+requests, or from **Actions → Cloud build and isolated API smoke → Run workflow**.
+It uses Node 24.19.0, `npm ci`, `npm run build`, and `npm run test:api`.
+The smoke test uses a temporary SQLite database, checks writes and persistence
+after restarting the API, disables reminders and removes its own temporary data.
+No root `.env`, OAuth, Telegram, Stripe or production database credentials are
+required for this development check.
+
+For an interactive cloud session:
+
+```bash
+npm ci
+npm run build
+npm run test:api
+# Only when an interactive API preview is needed:
+HABIT_REMINDERS_ENABLED=false npm run server
+npm run dev
+```
+
+The API binds to loopback by default. Keep the preview private. Habit SQLite
+state belongs on a persistent private volume via `HABIT_DB_PATH`, never in Git.
+The static Pages UI cannot provide this database/API. Supervised source work and
+isolated tests are available without claiming a hosted production API.
+
+Reminder scheduling is disabled by default; no timer starts unless
+`HABIT_REMINDERS_ENABLED=true` is explicitly supplied. Cloud checks always
+override it to false and clear Telegram credentials. Deployment and external
+data refresh workflows are now manual-only; these setup/test pushes do not
+deploy or run recurring refresh jobs. Live integrations require their own secure
+environment bindings and separate authorization.
